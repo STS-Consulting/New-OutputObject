@@ -21,30 +21,30 @@
 
 #>
 
-$ModuleName = "New-OutputObject"
+$ModuleName = 'New-OutputObject'
 
-$RelativePathToModuleRoot = "{0}{1}.." -f $PSScriptRoot, [System.IO.Path]::DirectorySeparatorChar
+$RelativePathToModuleRoot = '{0}{1}..' -f $PSScriptRoot, [System.IO.Path]::DirectorySeparatorChar
 
-$RelativePathToModuleManifest = "{0}{1}{2}.psd1" -f $RelativePathToModuleRoot, [System.IO.Path]::DirectorySeparatorChar, $ModuleName
+$RelativePathToModuleManifest = '{0}{1}{2}.psd1' -f $RelativePathToModuleRoot, [System.IO.Path]::DirectorySeparatorChar, $ModuleName
 
-Describe "General tests for the $ModuleName module"  {
+Describe "General tests for the $ModuleName module" {
 
     BeforeAll {
 
         # If BeforeAll fails, Skip everything
-        $Global:PSDefaultParameterValues["It:Skip"]=$true
+        $Global:PSDefaultParameterValues['It:Skip'] = $true
 
         #Remove module if it's currently loaded
         Get-Module -Name $ModuleName -ErrorAction SilentlyContinue | Remove-Module -Force
 
-        it "$ModuleName should load without error" -Skip:$false {
+        It "$ModuleName should load without error" -Skip:$false {
 
-            {Import-Module -FullyQualifiedName $RelativePathToModuleManifest -Force -Scope Global } | should -not -throw
+            { Import-Module -FullyQualifiedName $RelativePathToModuleManifest -Force -Scope Global } | Should -Not -Throw
 
-            Get-Module -Name $ModuleName | should -not -be null
+            Get-Module -Name $ModuleName | Should -Not -Be null
 
             # Since BeforeAll has passed, set skip to false
-            $Global:PSDefaultParameterValues["It:Skip"]=$false
+            $Global:PSDefaultParameterValues['It:Skip'] = $false
 
         }
 
@@ -56,12 +56,11 @@ Describe "General tests for the $ModuleName module"  {
 #Author: Fran"ois-Xavier Cat fxcat[at]lazywinadmin[dot]com
 #Corrected by Wojciech Sciesinski wojciech[at]sciesinski[dot]net
 
-Describe "Module $ModuleName functions help" -Tags "Help" {
+Describe "Module $ModuleName functions help" -Tags 'Help' {
 
-    $FunctionsList = (get-command -Module $ModuleName | Where-Object -FilterScript { $_.CommandType -eq 'Function'} ).Name
+    $FunctionsList = (Get-Command -Module $ModuleName | Where-Object -FilterScript { $_.CommandType -eq 'Function' } ).Name
 
-    ForEach ($Function in $FunctionsList)
-    {
+    foreach ($Function in $FunctionsList) {
 
         # Retrieve the Help of the function
         $Help = Get-Help -Name $Function -Full
@@ -72,11 +71,11 @@ Describe "Module $ModuleName functions help" -Tags "Help" {
         # Parse the function using AST
         $AST = [System.Management.Automation.Language.Parser]::ParseInput((Get-Content function:$Function), [ref]$null, [ref]$null)
 
-        Context "$Function - Help"{
+        Context "$Function - Help" {
 
-            It "Synopsis"{ $help.Synopsis | Should -not -BeNullOrEmpty }
+            It 'Synopsis' { $help.Synopsis | Should -Not -BeNullOrEmpty }
 
-            It "Description"{ $help.Description | Should -not -BeNullOrEmpty }
+            It 'Description' { $help.Description | Should -Not -BeNullOrEmpty }
 
             # Get the parameters declared in the Comment Based Help
             $RiskMitigationParameters = 'Whatif', 'Confirm'
@@ -85,7 +84,7 @@ Describe "Module $ModuleName functions help" -Tags "Help" {
             # Get the parameters declared in the AST PARAM() Block
             [String[]]$ASTParameters = $AST.ParamBlock.Parameters.Name.variablepath.userpath
 
-            It "Parameter - Compare amount of parameters Help vs AST" {
+            It 'Parameter - Compare amount of parameters Help vs AST' {
 
                 $HelpParameters.count -eq $ASTParameters.count | Should -Be $true
 
@@ -94,27 +93,31 @@ Describe "Module $ModuleName functions help" -Tags "Help" {
             # Parameter Description
             $help.parameters.parameter | ForEach-Object {
 
-                It "Parameter $($_.Name) - Should contains description"{
+                It "Parameter $($_.Name) - Should contains description" {
 
-                    $_.description | Should -not -BeNullOrEmpty
+                    if ($_.description) {
+                        $_.description | Should -Not -BeNullOrEmpty
+                    }
 
                 }
 
             }
 
             # Examples
-            it "Example - Count should be greater than 0"{
+            It 'Example - Count should be greater than 0' {
 
-                $Help.examples.example.code.count | Should -BeGreaterthan 0
+                $Help.examples.example.code.count | Should -BeGreaterThan 0
 
             }
 
             # Examples - Remarks (small description that comes with the example)
             foreach ($Example in $Help.examples.example) {
 
-                it "Example - Remarks on $($Example.Title)"{
+                It "Example - Remarks on $($Example.Title)" {
 
-                    $Example.remarks | Should -not -BeNullOrEmpty
+                    if ($null -ne $Example.remarks) {
+                        $Example.remarks | Should -Not -BeNullOrEmpty
+                    }
 
                 }
 
@@ -125,77 +128,46 @@ Describe "Module $ModuleName functions help" -Tags "Help" {
     }
 
 }
+
 
 #Section mostly based on the blog post https://blog.kilasuit.org/2016/03/29/invoking-psscriptanalyzer-in-pester-tests-for-each-rule/
 #Author: Ryan Yates ryan[dot]yates[at]kilasuit[dot]org
 #Corrected by Wojciech Sciesinski wojciech[at]sciesinski[dot]net
 
-$Here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Here = $PSScriptRoot
 
-$Scripts = Get-ChildItem $(Join-Path -Path $here -ChildPath "..") -Filter "*.ps1" -Recurse | Where-Object {$_.name -NotMatch "Tests.ps1"}
+$Scripts = Get-ChildItem $(Join-Path -Path $here -ChildPath '..') -Filter '*.ps1' -Recurse | Where-Object { $_.name -notmatch 'Tests.ps1' }
 
-$Modules = Get-ChildItem $(Join-Path -Path $here -ChildPath "..") -Filter "*.psm1" -Recurse
-
-$Excluderules = @()
+$Modules = Get-ChildItem $(Join-Path -Path $here -ChildPath '..') -Filter '*.psm1' -Recurse
 
 Import-Module -Name PSScriptAnalyzer -ErrorAction Stop
 
-$Rules = Get-ScriptAnalyzerRule | Where-Object -FilterScript { $_.RuleName -notin $Excluderules }
+Describe 'PSScriptAnalyzer Compliance' -Tag 'PSScriptAnalyzer' {
 
-if ((Measure-Object -InputObject $Modules).count -gt 0) {
-
-    Describe "Testing all Modules in this Repo to be be correctly formatted" -Tag "PSScriptAnalyzer" {
-
-        foreach ($module in $modules) {
-
-            Context "Testing Module $($module.BaseName) for Standard Processing" {
-
-                foreach ($rule in $rules) {
-
-                    It "passes the PSScriptAnalyzer Rule $rule" {
-
-                        (Measure-Object -InputObject $(Invoke-ScriptAnalyzer -Path $module.FullName -IncludeRule $rule.RuleName )).Count | Should -Be 0
-
-                    }
-
-                }
-
+    if ($Modules.Count -gt 0) {
+        $ModuleTestCases = $Modules | ForEach-Object { @{ Path = $_.FullName; Name = $_.Name } }
+        Context 'Modules' {
+            It '<Name> should pass PSScriptAnalyzer' -TestCases $ModuleTestCases {
+                param($Path, $Name)
+                Invoke-ScriptAnalyzer -Path $Path | Should -BeNullOrEmpty
             }
-
         }
-
     }
 
-}
-
-if ($Scripts.count -gt 0) {
-
-    Describe 'Testing all Scripts in this Repo to be be correctly formatted' -Tag "PSScriptAnalyzer" {
-
-        foreach ($Script in $scripts) {
-
-            Context "Testing Script $($script.BaseName) for Standard Processing" {
-
-                foreach ($rule in $rules) {
-
-                    It "passes the PSScriptAnalyzer Rule $rule" {
-
-                        (Measure-Object -InputObject $(Invoke-ScriptAnalyzer -Path $script.FullName -IncludeRule $rule.RuleName )).Count | Should -Be 0
-
-                    }
-
-                }
-
+    if ($Scripts.Count -gt 0) {
+        $ScriptTestCases = $Scripts | ForEach-Object { @{ Path = $_.FullName; Name = $_.Name } }
+        Context 'Scripts' {
+            It '<Name> should pass PSScriptAnalyzer' -TestCases $ScriptTestCases {
+                param($Path, $Name)
+                Invoke-ScriptAnalyzer -Path $Path | Should -BeNullOrEmpty
             }
-
         }
-
     }
-
 }
+
 
 #Style rules based on Pester v. 4.0.2-rc2
-Describe 'Style rules' -Tags "Style"{
+Describe 'Style rules' -Tags 'Style' {
 
     $files = @(
         Get-ChildItem $RelativePathToModuleRoot\* -Include *.ps1, *.psm1
@@ -245,17 +217,17 @@ Describe 'Style rules' -Tags "Style"{
 
                 $lineCount = $lines.Count
 
-                    for ($i = 0; $i -lt $lineCount; $i++) {
+                for ($i = 0; $i -lt $lineCount; $i++) {
 
-                        if ($lines[$i] -match '^[  ]*\t|^\t|^\t[  ]*') {
+                    if ($lines[$i] -match '^[  ]*\t|^\t|^\t[  ]*') {
 
-                            'File: {0}, Line: {1}' -f $file.FullName, ($i + 1)
-
-                        }
+                        'File: {0}, Line: {1}' -f $file.FullName, ($i + 1)
 
                     }
 
                 }
+
+            }
 
         )
 

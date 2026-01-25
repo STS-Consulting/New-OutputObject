@@ -20,7 +20,7 @@ New-OutputFolder | Select-Object -ExpandProperty OutputFolderPath
 #Because the objest is type System.IO.DirectoryInfo
 (New-OutputFolder | Select-Object -ExpandProperty OutputFolderPath).GetType()
 #Name of prepared object can be based on parameters like prefix, suffix, etc.
-$FileToCreate = (New-OutputFile -ParentPath c:\test -OutputFileNamePrefix Application -OutputFileNameMidPart XAB -OutputFileNameSuffix ErrorsOnly -OutputFileNameExtension txt).OutputFilePath
+$FileToCreate = (New-OutputFile -ParentPath c:\test -OutputFileNamePrefix Application -OutputFileNameStem XAB -OutputFileNameSuffix ErrorsOnly -OutputFileNameExtension txt).OutputFilePath
 Write-Host $FileToCreate
 #The function create only object in memory not real file
 Test-Path -Path $FileToCreate

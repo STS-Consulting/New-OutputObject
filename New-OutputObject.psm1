@@ -25,22 +25,26 @@ Set-StrictMode -Version Latest
 
 #Get public and private function definition files
 
-[String]$PublicFolderPath = "{0}{1}Public{1}*" -f $PSScriptRoot, [System.IO.Path]::DirectorySeparatorChar
-[String]$PrivateFolderPath = "{0}{1}Private{1}*" -f $PSScriptRoot, [System.IO.Path]::DirectorySeparatorChar
+$PublicFunctions = @(
+    'New-OutputFile.ps1'
+    'New-OutputFolder.ps1'
+    'New-OutputObject.ps1'
+)
 
-$Public  = @( Get-ChildItem -Path $PublicFolderPath -Include *.ps1 -ErrorAction SilentlyContinue )
-$Private = @( Get-ChildItem -Path $PrivateFolderPath -Include *.ps1 -ErrorAction SilentlyContinue )
+$PrivateFunctions = @(
+    'Get-OverwriteDecision.ps1'
+    'Test-CharsInPath.ps1'
+)
+
+$PublicValues = $PublicFunctions | ForEach-Object { Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path 'Public' -ChildPath $PSItem ) }
+$PrivateValues = $PrivateFunctions | ForEach-Object { Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path 'Private' -ChildPath $PSItem ) }
 
 #Dot source the files
-Foreach($import in @($Public + $Private))
-{
-    Try
-    {
-        Write-Verbose "Import file: $($import.fullname)"
-        . $import.fullname
-    }
-    Catch
-    {
-        Write-Error -Message "Failed to import file $($import.fullname): $_"
+foreach ($import in @($PublicValues + $PrivateValues)) {
+    try {
+        Write-Verbose "Import file: $import"
+        . $import
+    } catch {
+        Write-Error -Message "Failed to import file $import : $PSItem"
     }
 }

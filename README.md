@@ -13,7 +13,7 @@ Using the New-OutputObject you can prepare files/folders names like
 - a folder name like: \<MySuperServer>\<\_>\<DailyReport\>\<_\>\<1\>\<\_\>\<20170508\>
 
 ```powershell
-New-OutputFolder -OutputFolderNamePrefix MySuperServer -OutputFolderNameMidPart DailyReport -OutputFolderNameSuffix 1 -NamePartsSeparator "_" | Format-List
+New-OutputFolder -OutputFolderNamePrefix MySuperServer -OutputFolderNameStem DailyReport -OutputFolderNameSuffix 1 -NamePartsSeparator "_" | Format-List
 
 OutputObjectPath    : C:\Users\UserName\Documents\Scripts\1 - GitHub My\New-OutputObject\MySuperServer_DailyReport_20170723_1
 OutputFolderPath    : C:\Users\UserName\Documents\Scripts\1 - GitHub My\New-OutputObject\MySuperServer_DailyReport_20170723_1
@@ -26,7 +26,7 @@ or
 - a file name like: \<SuperImportantFile>\<->\<Generated on server>\<->\<SV004>-\<20170508-123400>.\<pdf>
 
 ```powershell
-New-OutputFile -OutputFileNamePrefix SuperImportantFile -OutputFileNameMidPart "Generated on server" -OutputFileNameSuffix $(Get-Item env:computername).Value -OutputFileNameExtension pdf | Format-List
+New-OutputFile -OutputFileNamePrefix SuperImportantFile -OutputFileNameStem "Generated on server" -OutputFileNameSuffix $(Get-Item env:computername).Value -OutputFileNameExtension pdf | Format-List
 
 OutputObjectPath    : C:\Users\Wojtek\Documents\Scripts\1 - GitHub My\New-OutputObject\SuperImportantFile-Generated on server-20170723-173456-TEST-COMPUTER.pdf
 OutputFilePath      : C:\Users\Wojtek\Documents\Scripts\1 - GitHub My\New-OutputObject\SuperImportantFile-Generated on server-20170723-173456-TEST-COMPUTER.pdf
@@ -84,7 +84,7 @@ Function intended for preparing a PowerShell custom object what contains e.g. fi
 |:---|:---:|:---|
 |ParentPath| .| |
 |OutputFileNamePrefix|Output||
-|OutputFileNameMidPart|||
+|OutputFileNameStem|||
 |OutputFileNameSuffix|||
 |IncludeDateTimePartInOutputFileName|true|||
 |DateTimePartInOutputFileName| Get-Date ||
@@ -133,7 +133,7 @@ Function intended for preparing a PowerShell custom object what contains e.g.fol
 |:---|:---:|:---|
 |ParentPath| .\\||
 |OutputFolderNamePrefix|Output||
-|OutputFolderNameMidPart|||
+|OutputFolderNameStem|||
 |OutputFolderNameSuffix|||
 |IncludeDateTimePartInOutputFolderName|true|||
 |DateTimePartInOutputFolderName| Get-Date ||

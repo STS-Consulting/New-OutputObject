@@ -13,7 +13,7 @@ Function intended for preparing a PowerShell object for output files like report
 
 ```
 New-OutputObject [-ObjectType] <String> [[-ParentPath] <String>] [[-OutputObjectNamePrefix] <String>]
- [[-OutputObjectNameMidPart] <String>] [[-OutputObjectNameSuffix] <String>]
+ [[-OutputObjectNameStem] <String>] [[-OutputObjectNameSuffix] <String>]
  [[-IncludeDateTimePartInOutputObjectName] <Boolean>] [[-DateTimePartInOutputObjectName] <DateTime>]
  [[-DateTimePartFormat] <String>] [[-OutputFileNameExtension] <String>] [[-NamePartsSeparator] <String>]
  [-BreakIfError]
@@ -50,7 +50,7 @@ PS \> $FileNeeded = @{
 
     ParentPath = 'C:\USERS\UserName\';
     OutputObjectNamePrefix = 'Messages';
-    OutputObjectNameMidPart = (Get-Item env:COMPUTERNAME).Value;
+    OutputObjectNameStem = (Get-Item env:COMPUTERNAME).Value;
     IncludeDateTimePartInOutputObjectName = $true;
     IncludeDateTimePartInOutputObjectName = $true;
 
@@ -85,7 +85,7 @@ $FileNeeded = @{
 
 ParentPath = 'C:\USERS\UserName\';
     OutputObjectNamePrefix = 'Messages';
-    OutputObjectNameMidPart = 'COMPUTERNAME';
+    OutputObjectNameStem = 'COMPUTERNAME';
     IncludeDateTimePartInOutputObjectName = $false;
     OutputFileNameExtension = "csv";
     OutputObjectNameSuffix = "failed"
@@ -168,7 +168,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -OutputObjectNameMidPart
+### -OutputObjectNameStem
 Part of the name which will be used in midle of output file name
 
 ```yaml

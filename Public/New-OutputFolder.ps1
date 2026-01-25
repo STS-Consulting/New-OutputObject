@@ -1,14 +1,14 @@
-Function New-OutputFolder {
-<#
-
+function New-OutputFolder {
+    <#
     .SYNOPSIS
-    Function intended for preparing a PowerShell object for output/create folders for e.g. reports or logs.
+    Function intended for preparing a PowerShell object for output/create folders for e.g. eports or logs.
 
     .DESCRIPTION
-    Function intended for preparing a PowerShell custom object what contains e.g. folder name for output/create folders. The name is prepared based on prefix, middle name part, suffix, date, etc. with verification if provided path exist and is it writable.
+    Function intended for preparing a PowerShell custom object what contains e.g. folder name for output/create folders.
+    The name is prepared based on prefix, middle name part, suffix, date, etc. with verification if provided path exist and is it writable.
 
     Returned object contains properties
-    - ParentPath - to use it please check an examples - as a [System.IO.DirectoyInfo]
+    - ParentPath - to use it please check an examples - as a [System.IO.DirectoryInfo]
     - ExitCode
     - ExitCodeDescription
 
@@ -17,8 +17,8 @@ Function New-OutputFolder {
     - 1 = "Provided parent path <PATH> doesn't exist"
     - 2 = "The result name contains unacceptable chars"
     - 3 = "Provided patch <PATH> is not writable"
-    - 4 = "The folder <PATH>\\<FOLDER_NAME> already exist  - can be overwritten"
-    - 5 = "The folder <PATH>\\<FOLDER_NAME> already exist  - can't be overwritten"
+    - 4 = "The folder <PATH>\<FOLDER_NAME> already exist  - can be overwritten"
+    - 5 = "The folder <PATH>\<FOLDER_NAME> already exist  - can't be overwritten"
 
     .PARAMETER ParentPath
     The folder path what will be used as the parent path for the new created object.
@@ -29,7 +29,7 @@ Function New-OutputFolder {
     .PARAMETER OutputFolderNamePrefix
     Prefix used for creating output folders name
 
-    .PARAMETER OutputFolderNameMidPart
+    .PARAMETER OutputFolderNameStem
     Part of the name which will be used in midle of output folder name
 
     .PARAMETER OutputFolderNameSuffix
@@ -54,27 +54,27 @@ Function New-OutputFolder {
     If used the function Doesn't ask for an overwrite decission, assumes that the file can be overwritten
 
     .EXAMPLE
+    (Get-Item env:COMPUTERNAME).Value
 
-    PS \> (Get-Item env:COMPUTERNAME).Value
     WXDX75
 
-    PS \> $FolderNeeded= @{
+    PS > $FolderNeeded= @{
         ParentPath = 'C:\USERS\UserName\';
         OutputFolderNamePrefix = 'Messages';
-        OutputFolderNameMidPart = (Get-Item env:COMPUTERNAME).Value
+        OutputFolderNameStem = (Get-Item env:COMPUTERNAME).Value
         IncludeDateTimePartInOutputFolderName = $false;
         BreakIfError = $true
     }
 
-    PS \> $PerServerReportFolderMessages = New-OutputFolder @FolderNeeded
+    PS > $PerServerReportFolderMessages = New-OutputFolder @FolderNeeded
 
-    PS \> $PerServerReportFolderMessages | Format-List
+    PS > $PerServerReportFolderMessages | Format-List
 
     OutputFilePath      : C:\users\UserName\Messages-WXDX75
     ExitCode            : 0
     ExitCodeDescription : Everything is fine :-)
 
-    PS \> New-Item -Path $PerServerReportFolderMessages.OutputFolderPath -ItemType Directory
+    PS > New-Item -Path $PerServerReportFolderMessages.OutputFolderPath -ItemType Directory
 
     Directory: C:\USERS\UserName
 
@@ -86,34 +86,35 @@ Function New-OutputFolder {
     Under preparation the file name is created, provided part of names are used, and availability of name (if the file exist now) is checked.
 
     .EXAMPLE
-
     $FolderNeeded= @{
-        ParentPath = 'C:\USERS\UserName\';
+
+    ParentPath = 'C:\USERS\UserName\';
         OutputFolderNamePrefix = 'Messages';
-        OutputFolderNameMidPart = 'COMPUTERNAME';
+        OutputFolderNameStem = 'COMPUTERNAME';
         OutputFolderNameSuffix = "failed"
     }
 
-    PS \> $PerServerReportFolderMessages = New-OutputFolder @FolderNeeded
+    PS > $PerServerReportFolderMessages = New-OutputFolder @FolderNeeded
 
-    PS \> $PerServerReportFolderMessages.OutputFolderPath | Select-Object -Property Name,Parent,exists | Format-List
+    PS > $PerServerReportFolderMessages.OutputFolderPath | Select-Object -Property Name,Parent,exists | Format-List
 
     Name   : Messages-COMPUTERNAME-20161112-failed
     Parent : UserName
     Exists : False
 
-    PS \> ($PerServerReportFolderMessages.OutputFolderPath).gettype()
+    PS > ($PerServerReportFolderMessages.OutputFolderPath).gettype()
 
     IsPublic IsSerial Name                                     BaseType
     -------- -------- ----                                     --------
     True     True     DirectoryInfo                            System.IO.FileSystemInfo
 
-    PS \> Test-Path ($PerServerReportFolderMessages.OutputFilePath)
+    PS > Test-Path ($PerServerReportFolderMessages.OutputFilePath)
     False
 
-    The function return object what contain the property named OutputFilePath what is the object of type System.IO.DirectoryInfo.
+    The function return object what contain the property named OutputFilePath what is the object of type [System.IO.DirectoryInfo].
 
-    Folder is not created. Only the object in the memory is prepared.
+    Folder is not created.
+    Only the object in the memory is prepared.
 
     .OUTPUTS
     System.Object[]
@@ -129,7 +130,7 @@ Function New-OutputFolder {
     KEYWORDS: PowerShell, Folder, FileSystem
 
     CURRENT VERSION
-    - 0.9.12 - 2018-05-01
+    - 0.9.8 - 2017-05-06
 
     HISTORY OF VERSIONS
     https://github.com/it-praktyk/New-OutputObject/CHANGELOG.md
@@ -138,19 +139,18 @@ Function New-OutputFolder {
     Copyright (c) 2016 Wojciech Sciesinski
     This function is licensed under The MIT License (MIT)
     Full license text: https://opensource.org/licenses/MIT
-
-    #>
+#>
 
     [cmdletbinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions','')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [OutputType([System.Object[]])]
     param (
         [parameter(Mandatory = $false)]
-        [String]$ParentPath = ".",
+        [String]$ParentPath = '.',
         [parameter(Mandatory = $false)]
-        [String]$OutputFolderNamePrefix = "Output",
+        [String]$OutputFolderNamePrefix = 'Output',
         [parameter(Mandatory = $false)]
-        [String]$OutputFolderNameMidPart = $null,
+        [String]$OutputFolderNameStem = $null,
         [parameter(Mandatory = $false)]
         [String]$OutputFolderNameSuffix = $null,
         [parameter(Mandatory = $false)]
@@ -158,10 +158,10 @@ Function New-OutputFolder {
         [parameter(Mandatory = $false)]
         [Nullable[DateTime]]$DateTimePartInOutputFolderName = $null,
         [Parameter(Mandatory = $false)]
-        [String]$DateTimePartFormat="yyyyMMdd",
+        [String]$DateTimePartFormat = 'yyyyMMdd',
         [parameter(Mandatory = $false)]
-        [alias("Separator")]
-        [String]$NamePartsSeparator="-",
+        [alias('Separator')]
+        [String]$NamePartsSeparator = '-',
         [parameter(Mandatory = $false)]
         [Switch]$BreakIfError,
         [parameter(Mandatory = $false)]
@@ -170,31 +170,31 @@ Function New-OutputFolder {
 
     $params = @{
 
-        ObjectType = 'Folder'
+        ObjectType                            = 'Folder'
 
-        ParentPath = $ParentPath
+        ParentPath                            = $ParentPath
 
-        OutputObjectNamePrefix = $OutputFolderNamePrefix
+        OutputObjectNamePrefix                = $OutputFolderNamePrefix
 
-        OutputObjectNameMidPart = $OutputFolderNameMidPart
+        OutputObjectNameStem                  = $OutputFolderNameStem
 
-        OutputObjectNameSuffix = $OutputFolderNameSuffix
+        OutputObjectNameSuffix                = $OutputFolderNameSuffix
 
         IncludeDateTimePartInOutputObjectName = $IncludeDateTimePartInOutputFolderName
 
-        DateTimePartInOutputObjectName = $DateTimePartInOutputFolderName
+        DateTimePartInOutputObjectName        = $DateTimePartInOutputFolderName
 
-        DateTimePartFormat = $DateTimePartFormat
+        DateTimePartFormat                    = $DateTimePartFormat
 
-        NamePartsSeparator = $NamePartsSeparator
+        NamePartsSeparator                    = $NamePartsSeparator
 
-        BreakIfError = $BreakIfError
+        BreakIfError                          = $BreakIfError
 
-        Force = $Force
+        Force                                 = $Force
 
     }
 
     $Result = New-OutputObject @params
 
-    Return $Result
+    return $Result
 }

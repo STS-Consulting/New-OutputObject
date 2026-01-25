@@ -14,7 +14,7 @@ reports or logs.
 
 ```
 New-OutputFolder [[-ParentPath] <String>] [[-OutputFolderNamePrefix] <String>]
- [[-OutputFolderNameMidPart] <String>] [[-OutputFolderNameSuffix] <String>]
+ [[-OutputFolderNameStem] <String>] [[-OutputFolderNameSuffix] <String>]
  [[-IncludeDateTimePartInOutputFolderName] <Boolean>] [[-DateTimePartInOutputFolderName] <DateTime>]
  [[-DateTimePartFormat] <String>] [[-NamePartsSeparator] <String>] [-BreakIfError]
 ```
@@ -49,7 +49,7 @@ WXDX75
 PS \> $FolderNeeded= @{
     ParentPath = 'C:\USERS\UserName\';
     OutputFolderNamePrefix = 'Messages';
-    OutputFolderNameMidPart = (Get-Item env:COMPUTERNAME).Value
+    OutputFolderNameStem = (Get-Item env:COMPUTERNAME).Value
     IncludeDateTimePartInOutputFolderName = $false;
     BreakIfError = $true
 }
@@ -79,7 +79,7 @@ $FolderNeeded= @{
 
 ParentPath = 'C:\USERS\UserName\';
     OutputFolderNamePrefix = 'Messages';
-    OutputFolderNameMidPart = 'COMPUTERNAME';
+    OutputFolderNameStem = 'COMPUTERNAME';
     OutputFolderNameSuffix = "failed"
 }
 
@@ -141,7 +141,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -OutputFolderNameMidPart
+### -OutputFolderNameStem
 Part of the name which will be used in midle of output folder name
 
 ```yaml

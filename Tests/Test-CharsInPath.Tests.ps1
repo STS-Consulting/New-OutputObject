@@ -22,31 +22,32 @@
 #>
 
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-
-[String]$PrivateFolderPath = "{0}{1}..{1}Private{1}" -f $here, [System.IO.Path]::DirectorySeparatorChar
-
-. "$PrivateFolderPath$sut"
+BeforeAll {
+    $sut = 'Test-CharsInPath.ps1'
+    $here = $PSScriptRoot
+    [String]$PrivateFolderPath = Join-Path -Path $here -ChildPath '..\Private'
+    [String]$SutPath = Join-Path -Path $PrivateFolderPath -ChildPath $sut
+    . $SutPath
+}
 
 [Bool]$VerboseFunctionOutput = $false
 
-Describe "Test-CharsInPath" {
+Describe 'Test-CharsInPath' {
 
-    Context "Input is a file or a directory PSObject" {
+    Context 'Input is a file or a directory PSObject' {
 
-        $TestFile = New-Item -Path "TestDrive:" -Name "TestFile1.txt" -ItemType File
+        $TestFile = New-Item -Path 'TestDrive:' -Name 'TestFile1.txt' -ItemType File
 
-        $TestDir = New-Item -Path "TestDrive:" -Name "TestDir1" -ItemType Container
+        $TestDir = New-Item -Path 'TestDrive:' -Name 'TestDir1' -ItemType Container
 
-        It "Input is a directory, SkipCheckCharsInFolderPart" {
+        It 'Input is a directory, SkipCheckCharsInFolderPart' {
 
             Test-CharsInPath -path $TestDir -SkipCheckCharsInFolderPart | Should -Be 1
 
         }
 
-        It "Input is a file, SkipCheckCharsInFileNamePart" {
+        It 'Input is a file, SkipCheckCharsInFileNamePart' {
 
             Test-CharsInPath -path $TestFile -SkipCheckCharsInFileNamePart | Should -Be 1
 
@@ -54,189 +55,193 @@ Describe "Test-CharsInPath" {
 
     }
 
-    Context "Input is a string" {
+    Context 'Input is a string' {
 
-        If ( ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core') -and $ISLinux) {
 
-            #[char]58 = NULL
+        BeforeAll {
+            if ( ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core') -and $ISLinux) {
 
-            [String]$CorrectPathString = '/Temp/Add-GroupsMember.ps1'
+                #[char]58 = NULL
 
-            [String]$InCorrectPathString = "/home/user/sett$([char]0)ings/Temp/Add-ADGroupMember.ps1"
+                [String]$CorrectPathString = '/Temp/Add-GroupsMember.ps1'
 
-            [String]$InCorrectFileNameString = "/home/user/Temp/Add-ADGrou$([char]0)Member.ps1"
+                [String]$InCorrectPathString = "/home/user/sett$([char]0)ings/Temp/Add-ADGroupMember.ps1"
 
-            [String]$IncorrectFullPathString = "/usr/sha$([char]0)re/somewhere/Add-ADGroup$([char]0)Member.ps1"
+                [String]$InCorrectFileNameString = "/home/user/Temp/Add-ADGrou$([char]0)Member.ps1"
 
-            [String]$IncorrectDirectoryOnly = "/usr/share/loc$([char]0)al/"
+                [String]$IncorrectFullPathString = "/usr/sha$([char]0)re/somewhere/Add-ADGroup$([char]0)Member.ps1"
 
-            [String]$CorrectDirectoryOnly = '/etc/sysconfig/'
+                [String]$IncorrectDirectoryOnly = "/usr/share/loc$([char]0)al/"
 
-            [String]$IncorrectFileNameOnly = "Test-File-201606$([char]0)08-1315.txt"
+                [String]$CorrectDirectoryOnly = '/etc/sysconfig/'
 
-            [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
+                [String]$IncorrectFileNameOnly = "Test-File-201606$([char]0)08-1315.txt"
 
-        }
-        ElseIf ( ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core') -and $IsMacOS) {
+                [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
 
-            #[char]58 = ':'
+            } elseif ( ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core') -and $IsMacOS) {
 
-            [String]$CorrectPathString = '/Temp/Add-GroupsMember.ps1'
+                #[char]58 = ':'
 
-            [String]$InCorrectPathString = "/home/user/sett$([char]58)ings/Temp/Add-ADGroupMember.ps1"
+                [String]$CorrectPathString = '/Temp/Add-GroupsMember.ps1'
 
-            [String]$InCorrectFileNameString = "/home/user/Temp/Add-ADGrou$([char]58)Member.ps1"
+                [String]$InCorrectPathString = "/home/user/sett$([char]58)ings/Temp/Add-ADGroupMember.ps1"
 
-            [String]$IncorrectFullPathString = "/usr/sha$([char]58)re/somewhere/Add-ADGroup$([char]58)Member.ps1"
+                [String]$InCorrectFileNameString = "/home/user/Temp/Add-ADGrou$([char]58)Member.ps1"
 
-            [String]$IncorrectDirectoryOnly = "/usr/share/loc$([char]58)al/"
+                [String]$IncorrectFullPathString = "/usr/sha$([char]58)re/somewhere/Add-ADGroup$([char]58)Member.ps1"
 
-            [String]$CorrectDirectoryOnly = '/etc/sysconfig/'
+                [String]$IncorrectDirectoryOnly = "/usr/share/loc$([char]58)al/"
 
-            [String]$IncorrectFileNameOnly = "Test-File-201606$([char]58)08-1315.txt"
+                [String]$CorrectDirectoryOnly = '/etc/sysconfig/'
 
-            [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
+                [String]$IncorrectFileNameOnly = "Test-File-201606$([char]58)08-1315.txt"
 
-        }
-        ElseIf ( ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core') -and $IsWindows )  {
+                [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
 
-            #The differences between 'normal' PowerShell (based on PSEdition: Desktop, PSVersion 5.1.15063.483) and
-            #PowerShell Core (based on PSEdition: Core, PSVersion: 6.0.0-beta) are
-            #chars UTF8 34, 60, 62 for [System.IO.Path]::GetInvalidPathChars()
+            } elseif ( ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core') -and $IsWindows ) {
 
-            [String]$CorrectPathString = 'C:\Windows\Temp\Add-GroupsMember.ps1'
+                #The differences between 'normal' PowerShell (based on PSEdition: Desktop, PSVersion 5.1.15063.483) and
+                #PowerShell Core (based on PSEdition: Core, PSVersion: 6.0.0-beta) are
+                #chars UTF8 34, 60, 62 for [System.IO.Path]::GetInvalidPathChars()
 
-            [String]$InCorrectPathString = 'C:\Win>dows\Te%mp\Add-ADGroupMember.ps1'
+                [String]$CorrectPathString = 'C:\Windows\Temp\Add-GroupsMember.ps1'
 
-            [String]$InCorrectFileNameString = 'C:\Windows\Temp\Add-ADGrou|p<Member.ps1'
+                [String]$InCorrectPathString = 'C:\Win>dows\Te%mp\Add-ADGroupMember.ps1'
 
-            [String]$IncorrectFullPathString = 'C:\Win>dows\Temp\Add-ADGrou|p<Member.ps1'
+                [String]$InCorrectFileNameString = 'C:\Windows\Temp\Add-ADGrou|p<Member.ps1'
 
-            [String]$IncorrectDirectoryOnly = 'C:\AppData\Loc|al\'
+                [String]$IncorrectFullPathString = 'C:\Win>dows\Temp\Add-ADGrou|p<Member.ps1'
 
-            [String]$CorrectDirectoryOnly = 'C:\AppData\Local\'
+                [String]$IncorrectDirectoryOnly = 'C:\AppData\Loc|al\'
 
-            [String]$IncorrectFileNameOnly = 'Test-File-201606*08-1315.txt'
+                [String]$CorrectDirectoryOnly = 'C:\AppData\Local\'
 
-            [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
+                [String]$IncorrectFileNameOnly = 'Test-File-201606*08-1315.txt'
 
-        }
-        #Windows
-        Else {
+                [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
 
-            [String]$CorrectPathString = 'C:\Windows\Temp\Add-GroupsMember.ps1'
+            }
+            #Windows
+            else {
 
-            [String]$InCorrectPathString = 'C:\Win>dows\Te%mp\Add-ADGroupMember.ps1'
+                [String]$CorrectPathString = 'C:\Windows\Temp\Add-GroupsMember.ps1'
 
-            [String]$InCorrectFileNameString = 'C:\Windows\Temp\Add-ADGrou|p<Member.ps1'
+                [String]$InCorrectPathString = 'C:\Win>dows\Te%mp\Add-ADGroupMember.ps1'
 
-            [String]$IncorrectFullPathString = 'C:\Win>dows\Temp\Add-ADGrou|p<Member.ps1'
+                [String]$InCorrectFileNameString = 'C:\Windows\Temp\Add-ADGrou|p<Member.ps1'
 
-            [String]$IncorrectDirectoryOnly = 'C:\AppData\Loc>al\'
+                [String]$IncorrectFullPathString = 'C:\Win>dows\Temp\Add-ADGrou|p<Member.ps1'
 
-            [String]$CorrectDirectoryOnly = 'C:\AppData\Local\'
+                [String]$IncorrectDirectoryOnly = 'C:\AppData\Loc>al\'
 
-            [String]$IncorrectFileNameOnly = 'Test-File-201606*08-1315.txt'
+                [String]$CorrectDirectoryOnly = 'C:\AppData\Local\'
 
-            [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
+                [String]$IncorrectFileNameOnly = 'Test-File-201606*08-1315.txt'
 
-        }
+                [String]$CorrectFileNameOnly = 'Test-File-20160608-1315.txt'
 
-        It "Input is string, CorrectPathString" {
-
-            Test-CharsInPath -Path $CorrectPathString -verbose:$VerboseFunctionOutput | should -be 0
-
+            }
         }
 
-        It "Input is string, SkipCheckCharsInFolderPart, CorrectPathString" {
 
-            Test-CharsInPath -Path $CorrectPathString -SkipCheckCharsInFolderPart -verbose:$VerboseFunctionOutput | should -be 0
+
+        It 'Input is string, CorrectPathString' {
+
+            Test-CharsInPath -Path $CorrectPathString -Verbose:$VerboseFunctionOutput | Should -Be 0
+
 
         }
 
-        It "Input is string, SkipCheckCharsInFileNamePart, CorrectPathString" {
+        It 'Input is string, SkipCheckCharsInFolderPart, CorrectPathString' {
 
-            Test-CharsInPath -Path $CorrectPathString -SkipCheckCharsInFileNamePart -verbose:$VerboseFunctionOutput | should -be 0
-
-        }
-
-        It "Input is string, SkipCheckCharsInFolderPart, IncorrectDirectoryOnly" {
-
-            Test-CharsInPath -Path $IncorrectDirectoryOnly -SkipCheckCharsInFolderPart -verbose:$VerboseFunctionOutput | should -be 1
+            Test-CharsInPath -Path $CorrectPathString -SkipCheckCharsInFolderPart -Verbose:$VerboseFunctionOutput | Should -Be 0
 
         }
 
-        It "Input is string, IncorrectDirectoryOnly" {
+        It 'Input is string, SkipCheckCharsInFileNamePart, CorrectPathString' {
 
-            Test-CharsInPath -Path $IncorrectDirectoryOnly  -verbose:$VerboseFunctionOutput | should -be 2
-
-        }
-
-        It "Input is string, CorrectDirectoryOnly only" {
-
-            Test-CharsInPath -Path $CorrectDirectoryOnly -verbose:$VerboseFunctionOutput | should -be 0
+            Test-CharsInPath -Path $CorrectPathString -SkipCheckCharsInFileNamePart -Verbose:$VerboseFunctionOutput | Should -Be 0
 
         }
 
-        It "Input is string, SkipCheckCharsInFileNamePart, InCorrectFileNameString" {
+        It 'Input is string, SkipCheckCharsInFolderPart, IncorrectDirectoryOnly' {
 
-            Test-CharsInPath -Path $InCorrectFileNameString -SkipCheckCharsInFileNamePart -verbose:$VerboseFunctionOutput | should -be 0
-
-        }
-
-        It "Input is string, InCorrectFileNameString" {
-
-            Test-CharsInPath -Path $InCorrectFileNameString -verbose:$VerboseFunctionOutput | should -be 3
+            Test-CharsInPath -Path $IncorrectDirectoryOnly -SkipCheckCharsInFolderPart -Verbose:$VerboseFunctionOutput | Should -Be 1
 
         }
 
-        It "Input is string, SkipCheckCharsInFileNamePart, IncorrectFileNameOnly" {
+        It 'Input is string, IncorrectDirectoryOnly' {
 
-            Test-CharsInPath -Path $IncorrectFileNameOnly -SkipCheckCharsInFileNamePart -verbose:$VerboseFunctionOutput | should -be 1
-
-        }
-
-        It "Input is string, IncorrectFileNameOnly only" {
-
-            Test-CharsInPath -Path $IncorrectFileNameOnly -verbose:$VerboseFunctionOutput | should -be 3
+            Test-CharsInPath -Path $IncorrectDirectoryOnly -Verbose:$VerboseFunctionOutput | Should -Be 2
 
         }
 
-        It "Input is string, SkipCheckCharsInFileNamePart, CorrectFileNameOnly" {
+        It 'Input is string, CorrectDirectoryOnly only' {
 
-            Test-CharsInPath -Path $CorrectFileNameOnly -SkipCheckCharsInFileNamePart -verbose:$VerboseFunctionOutput | should -be 1
-
-        }
-
-        It "Input is string, CorrectFileNameOnly only" {
-
-            Test-CharsInPath -Path $CorrectFileNameOnly -verbose:$VerboseFunctionOutput | should -be 0
+            Test-CharsInPath -Path $CorrectDirectoryOnly -Verbose:$VerboseFunctionOutput | Should -Be 0
 
         }
 
-        It "Input is string, SkipCheckCharsInFolderPart and SkipCheckCharsInFileNamePart, InCorrectPathString" {
+        It 'Input is string, SkipCheckCharsInFileNamePart, InCorrectFileNameString' {
 
-            Test-CharsInPath -Path $CorrectPathString -SkipCheckCharsInFileNamePart -SkipCheckCharsInFolderPart -verbose:$VerboseFunctionOutput | should -be 1
+            Test-CharsInPath -Path $InCorrectFileNameString -SkipCheckCharsInFileNamePart -Verbose:$VerboseFunctionOutput | Should -Be 0
+
+        }
+
+        It 'Input is string, InCorrectFileNameString' {
+
+            Test-CharsInPath -Path $InCorrectFileNameString -Verbose:$VerboseFunctionOutput | Should -Be 3
+
+        }
+
+        It 'Input is string, SkipCheckCharsInFileNamePart, IncorrectFileNameOnly' {
+
+            Test-CharsInPath -Path $IncorrectFileNameOnly -SkipCheckCharsInFileNamePart -Verbose:$VerboseFunctionOutput | Should -Be 1
+
+        }
+
+        It 'Input is string, IncorrectFileNameOnly only' {
+
+            Test-CharsInPath -Path $IncorrectFileNameOnly -Verbose:$VerboseFunctionOutput | Should -Be 3
+
+        }
+
+        It 'Input is string, SkipCheckCharsInFileNamePart, CorrectFileNameOnly' {
+
+            Test-CharsInPath -Path $CorrectFileNameOnly -SkipCheckCharsInFileNamePart -Verbose:$VerboseFunctionOutput | Should -Be 1
+
+        }
+
+        It 'Input is string, CorrectFileNameOnly only' {
+
+            Test-CharsInPath -Path $CorrectFileNameOnly -Verbose:$VerboseFunctionOutput | Should -Be 0
+
+        }
+
+        It 'Input is string, SkipCheckCharsInFolderPart and SkipCheckCharsInFileNamePart, InCorrectPathString' {
+
+            Test-CharsInPath -Path $CorrectPathString -SkipCheckCharsInFileNamePart -SkipCheckCharsInFolderPart -Verbose:$VerboseFunctionOutput | Should -Be 1
 
         }
 
     }
 
-    Context "Input is other than string or System.IO.X" {
+    Context 'Input is other than string or System.IO.X' {
 
-        It "Input is Int32" {
+        It 'Input is Int32' {
 
             [Int]$PathToTest = 23
 
-            { Test-CharsInPath -Path $PathToTest -verbose:$VerboseFunctionOutput } | should -Throw
+            { Test-CharsInPath -Path $PathToTest -Verbose:$VerboseFunctionOutput } | Should -Throw
 
         }
 
-        It "Input is System.Diagnostics.Process" {
+        It 'Input is System.Diagnostics.Process' {
 
             $PathToTest = Get-Process | Select-Object -First 1
 
-            { Test-CharsInPath -Path $PathToTest -verbose:$VerboseFunctionOutput } | should -Throw
+            { Test-CharsInPath -Path $PathToTest -Verbose:$VerboseFunctionOutput } | Should -Throw
 
         }
 

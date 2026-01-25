@@ -1,2 +1,4 @@
 *.TempPoint.*
 Invoke-PublishToGallery.ps1
+
+*.log

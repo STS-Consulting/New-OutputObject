@@ -119,6 +119,16 @@
   - New-OutputObject.Tests                  v. 0.9.14
   - Test-CharsInPath.Tests                  v. 0.8.0
 
+- 0.9.15 - 2021-08-09
+  - New-OutputObject                        v. 0.9.15
+  - New-OutputFile                          v. 0.9.15
+  - New-OutputFolder                        v. 0.9.15
+  - Test-CharsInPath                        v. 0.7.0
+  - Get-OverwriteDecision                   v. 0.1.2
+  - New-OutputObject-Module-Specific.Tests  v. 0.9.12
+  - New-OutputObject.Tests                  v. 0.9.14
+  - Test-CharsInPath.Tests                  v. 0.8.0
+
 
 ## General
 
@@ -150,6 +160,8 @@
   - minor formating updates
 - 0.9.13 - 2018-05-01
   - The implementation of the Force parameter corrected
+- 0.9.15 - 2021-08-09
+  - 💄Change 'MidPart' to 'Stem', revise order of name parts
 
 ## Function New-OutputObject
 
@@ -173,6 +185,8 @@
   - The parameter Force added
   - minor formating updates
 - 0.9.14 - 2018-06-04 - unused variables removed
+- 0.9.15 - 2021-08-09
+  - 💄Change 'MidPart' to 'Stem', revise order of name parts
 
 ## Function New-OutputFile
 
@@ -201,6 +215,8 @@
 - 0.9.10 - 2017-07-23 - Reference to VERSIONS.md changed to CHANGELOG.md
 - 0.9.11 - 2018-03-16 - The parameter Force added, minor formating updates
 - 0.9.12 - 2018-05-01 - The implementation of the Force parameter corrected
+- 0.9.15 - 2021-08-09
+  - 💄Change 'MidPart' to 'Stem', revise order of name parts
 
 ## Function New-OutputFolder
 
@@ -218,6 +234,8 @@
 - 0.9.10 - 2017-07-23 - Reference to VERSIONS.md changed to CHANGELOG.md
 - 0.9.11 - 2018-03-16 - The parameter Force added, minor formating updates
 - 0.9.12 - 2018-05-01 - The implementation of the Force parameter corrected
+- 0.9.15 - 2021-08-09
+  - 💄Change 'MidPart' to 'Stem', revise order of name parts
 
 ## Function Test-CharsInPath
 
