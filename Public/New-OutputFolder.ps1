@@ -1,4 +1,4 @@
-function New-OutputFolder {
+﻿function New-OutputFolder {
     <#
     .SYNOPSIS
     Function intended for preparing a PowerShell object for output/create folders for e.g. eports or logs.

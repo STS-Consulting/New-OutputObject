@@ -1,4 +1,4 @@
-function Get-OverwriteDecision {
+﻿function Get-OverwriteDecision {
 <#
 
     .SYNOPSIS

@@ -1,4 +1,4 @@
-<#
+﻿<#
 
     .SYNOPSIS
     Pester tests to general validation of the New-OutputObject module - e.g. help, PSScriptAnalyzer results, style rules

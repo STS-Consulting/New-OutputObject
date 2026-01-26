@@ -1,4 +1,4 @@
-function New-OutputFile {
+﻿function New-OutputFile {
     <#
     .SYNOPSIS
     Function intended for preparing a PowerShell object for output files like reports or logs.

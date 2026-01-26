@@ -1,4 +1,4 @@
-<#
+﻿<#
     .SYNOPSIS
     Pester tests to validate the New-OutputObject.ps1 function
 
