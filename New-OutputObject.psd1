@@ -8,7 +8,7 @@
     RootModule        = 'New-OutputObject'
 
     # Version number of this module.
-    ModuleVersion     = '2603.01.1415'
+    ModuleVersion     = '2603.02.1415'
 
     # Supported PSEditions
     # CompatiblePSEditions = @('Desktop','Core')
