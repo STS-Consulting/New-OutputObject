@@ -1,4 +1,4 @@
-#
+﻿#
 # Module manifest for module 'New-OutputObject'
 #
 
