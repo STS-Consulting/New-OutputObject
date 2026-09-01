@@ -1,9 +1,9 @@
 ---
-applyTo: "**/*.ps1,**/*.psm1,**/*.psd1"
-description: "Comprehensive PowerShell development guidance for AI-assisted authoring (Copilot). Combines Microsoft cmdlet guidelines and community best practices."
+applyTo: "**/*.ps1,**/*.ps1xml,**/*.psc1,**/*.psd1,**/*.psm1,**/*.pssc,**/*.psrc,**/*.cdxml,**/*.prf,**/*.psh,**/*.ps2,**/*.ps2xml,**/*.psc2"
+description: "Comprehensive PowerShell development guidance for AI-assisted authoring. Combines Microsoft cmdlet guidelines and community best practices."
 ---
 
-## version: "2601.24.2100"
+## version: "2607.02.2100"
 
 # PowerShell Development Guidelines for GitHub Copilot
 
@@ -17,6 +17,140 @@ This document consolidates authoritative guidance for using GitHub Copilot to ge
 - **Success Criteria:** Script passes static analysis (ScriptAnalyzer), has basic Pester tests, uses approved verbs and types
 
 ## High-Level Principles
+
+These principles govern how every rule and example in this document must be authored and maintained.
+
+### Rule Consistency and Example Compliance
+
+**CRITICAL REQUIREMENT:** All rules, patterns, and examples in this document must be logically consistent with each other. When adding, modifying, or reviewing rules and examples:
+
+- Every complete script/function example must comply with all applicable rules stated in the document
+- Focused instructional snippets may omit unrelated requirements, but must not contradict any rule in this document
+- Intentionally non-compliant anti-pattern snippets are allowed only when clearly labeled as incorrect (for example, `Do Not Use`) and paired with compliant guidance
+- If a rule states a requirement (e.g., "whenever ShouldProcess is used, include a -Force parameter"), every example demonstrating that pattern must implement it
+- If an example violates a documented rule, the example must be corrected
+- New rules must not contradict existing rules
+- When updating a rule, all affected examples throughout the document must be updated to match
+- Inconsistencies between rules and examples represent a documentation failure and must be resolved before acceptance
+
+### Mandatory Completion Contract For Copilot
+
+This section is a hard completion contract. Guidance language is insufficient. Enforcement is required.
+
+#### 1. Mandatory Completion Gate
+
+- Do not declare completion until every rule section has been checked line-by-line against every example block.
+- For enforcement rules, `prefer` is forbidden. Use `must`, `required`, or equivalent mandatory language only.
+
+#### 2. Required Audit Process
+
+- Step 1: Build a rule inventory from top to bottom.
+- Step 2: For each rule, scan the entire file for violations.
+- Step 3: Fix all violations found for that rule.
+- Step 4: Re-scan for that same rule and confirm zero matches.
+- Step 5: Move to next rule.
+- Step 6: After the last rule, run full-file regression checks.
+
+#### 3. Required Evidence Before Completion
+
+- Report rule count audited.
+- Report violation count found and fixed.
+- Report exact final validation outputs.
+- State explicitly that no unchecked rules remain.
+
+#### 4. Hard Stop Policy
+
+- If any known validation check fails, do not claim completion.
+- If a new issue appears during final scan, continue automatically until all checks pass.
+- If a rule is violated by one example, fix sibling examples with the same pattern.
+
+#### 5. Deterministic Validation Requirements
+
+- Include required checks for positional parameter usage in examples.
+- Include required checks for ShouldProcess and Force pairing.
+- Include required checks for prohibited streams and prompts.
+- Include required checks for PSItem usage consistency.
+- Include required checks for comment-based help keyword completeness.
+- Include required checks for markdown fence integrity.
+- Include required checks for duplicate or contradictory guidance.
+
+#### 6. Failure Behavior
+
+- If a completion claim is proven invalid, report it as invalid and resume full audit from the first unchecked rule class.
+
+## Universal PowerShell Development And Refactoring Contract
+
+Use this section for any PowerShell script creation, update, cleanup, or refactor.
+Treat this section as fail-closed: do not report completion until every required check passes.
+
+### Definition Of Done (Generic)
+
+1. Scope
+- Apply all requested changes to every in-scope script.
+- Do not leave partial updates across files.
+
+2. Parameter Usage
+- Prefer explicit named parameters for cmdlet calls unless positional form is explicitly required.
+- For user-requested style examples, follow the exact style requested.
+
+3. PowerShell Style
+- Use PowerShell-native commands and patterns.
+- Do not use bash or Linux shell syntax in scripts or examples.
+- Do not use backtick line continuation; use splatting or natural pipeline breaks.
+- Use $PSItem in pipelines instead of $_.
+
+4. Safety And Behavior
+- Preserve runtime behavior.
+- Avoid hidden workarounds or cosmetic substitutes.
+- If a user requests removal, remove the construct rather than replacing it with an equivalent disguise.
+
+5. Error Handling
+- Do not use empty catch blocks unless explicitly justified and documented.
+- Prefer targeted error handling with actionable context.
+
+6. Variable Quality
+- Use descriptive variable names.
+- Remove declared-but-unused variable assignments introduced during refactors.
+
+7. Output Hygiene
+- Remove visual separator lines and separator-string output.
+- Keep informational output concise and operationally meaningful.
+
+8. Validation After Every Edit Burst
+- Run deterministic checks from disk after changes.
+- Report exact before/after counts for required search patterns.
+- Run parse validation for every modified script and require ParseErrors = 0.
+
+9. Completion Rule
+- If any required check fails, continue fixing automatically.
+- Do not claim completion while any required check is non-zero or parsing fails.
+
+### Required Final Proof Format
+
+1. Files changed.
+2. Pattern checks with before and after counts.
+3. Parse results for each modified file.
+4. Final status: PASS or FAIL.
+
+### Deterministic Verification Command Pattern (PowerShell)
+
+```powershell
+# Example: literal pattern count
+$matches = Select-String -Path .\<path>\*.ps1 -SimpleMatch -Pattern '<literal pattern>'
+"LiteralMatchCount=$(@($matches).Count)"
+
+# Example: regex pattern count
+$regexMatches = Select-String -Path .\<path>\*.ps1 -Pattern '<regex pattern>'
+"RegexMatchCount=$(@($regexMatches).Count)"
+
+# Example: parse check for all scripts in scope
+Get-ChildItem -Path .\<path> -Filter *.ps1 -File | ForEach-Object {
+    $tokens = $null
+    $errors = $null
+    [void][System.Management.Automation.Language.Parser]::ParseFile($PSItem.FullName, [ref]$tokens, [ref]$errors)
+    "{0}: ParseErrors={1}" -f $PSItem.Name, $errors.Count
+}
+```
 
 ## Internal Consistency and Documentation Standards
 
@@ -32,21 +166,21 @@ All documentation, examples, and setup scripts (including `SETUP.md` and README 
 
 - Never use `Write-Host`. Period.
 - Never use `Read-Host`. Period.
-- Use `ShouldProcess` or `ShouldContinue` for interactive, non-pipeline display (e.g., setup verification, user prompts)
-- Prefer `Write-Information`, `Write-Verbose`, `Write-Warning`, or `Write-Error` for status, diagnostics, and error reporting
-- All examples and setup scripts must not use `Write-Host`.
+- Use `ShouldProcess` and `ShouldContinue` for confirmation prompts; never engineer custom menus or multiple-choice prompt flows
+- Use streams for operational messaging: `Write-Information`, `Write-Verbose`, `Write-Debug`, `Write-Warning`, and `Write-Error`
+- All examples and setup scripts must not use `Write-Host` or `Read-Host`.
 - Do not create messages with a colon immediately after a variable `$VARIABLE:` is not allowed; use `$VARIABLE` or `$PSItem` instead.
 
 **Example (Setup Verification):**
 
 ```powershell
 # DO use Messages
-Write-Information -MessageData "INFORMATION:  $PSItem ($($module.Version))" -InformationAction Continue
+Write-Information -MessageData "$PSItem ($($module.Version))" -InformationAction Continue
 ```
 
 ```powershell
-# Do Not Use $VARIABLE:
-Write-Information -MessageData "INFORMATION:  $PSItem: ($($module.Version))" -InformationAction Continue
+# Do Not Use: variable name immediately followed by a colon
+Write-Information -MessageData "$moduleName: ($($module.Version))" -InformationAction Continue
 ```
 
 ## Coding Best Practices
@@ -55,12 +189,13 @@ Write-Information -MessageData "INFORMATION:  $PSItem: ($($module.Version))" -In
 - **Predictable, Testable Functions:** Prefer small, single-responsibility advanced functions that accept parameters and emit objects
 - **Pipeline-Friendly:** Support Begin/Process/End/Clean blocks when appropriate; enable ValueFromPipeline or ValueFromPipelineByPropertyName
 - **Full Cmdlet Names:** Use approved verbs from Get-Verb; avoid aliases in scripts
-- **Readability Over Cleverness:** Use `$PSItem` instead of `$_`; prefer maintainability over micro-optimizations; optimize only when profiling shows need
+- **Readability Over Cleverness:** Use `$PSItem` instead of `$_`;
 - **No Wrappers:** Do not create wrapper functions that replace built-in PowerShell cmdlets or language features; use native commands
 - **Rich Vocabulary:** Use extensive, precise vocabulary (e.g., "repudiated" or "forsaken" over "superseded" when contextually appropriate)
 
 ## Code Signing and Authenticode
 
+- **Cryptographic signatures should be respected**. When the file is changed, they shall be removed.
 - **NEVER generate or fabricate Authenticode signature blocks** - cryptographic signatures must be created using legitimate signing tools (`Set-AuthenticodeSignature`) with valid certificates
 - **All PowerShell files should be signed AFTER verification** - this prevents configuration drift and malicious changes
 - **Sign all file types:** `.ps1` (scripts), `.psm1` (modules), `.psd1` (manifests and data files), and `.ps1xml` (format files)
@@ -77,35 +212,23 @@ Write-Information -MessageData "INFORMATION:  $PSItem: ($($module.Version))" -In
   - PascalCase for function and parameter names
   - camelCase for private/local variables
   - PascalCase for public variables
-- **Line Length:** Keep lines reasonably short (115-120 characters recommended)
+- **Line Length:** We use modern high-resolution monitors; Let the end user choose whether or not to use WordWrap. Keep lines readable; do not enforce a fixed maximum. Let the end user choose whether or not to use `Word Wrap`. This is an example of a long line that may be wrapped by the end user's editor based on their preferences.
 - **No Linebreaks in Messages** Do not use linebreaks (e.g., `\n` or backtick-n) in `Write-Information`, `Write-Verbose`, `Write-Warning`, or `Write-Error` messages.
 - **Pipeline Formatting:** Use line breaks after pipeline operators for readability
 - **Whitespace:** Avoid unnecessary whitespace; use consistent spacing around operators
 - **Quotes:** Always use straight quotes (' or ") in code and documentation (avoid smart quotes)
 - **Dashes:** Use hyphens (-) only; avoid en/em dashes in code and documentation
-- **Comment-Based Help:** Required for all public functions with:
-  - `.VERSION` (format: YYMM.DD.HH00)
-  - `.GUID` (unique identifier)
-  - `.COMPATIBLEPSEDITIONS` (Core, Desktop, or both)
-  - `.AUTHOR` (full name)
-  - `.COMPANYNAME`
-  - `.COPYRIGHT` (with license type)
-  - `.TAGS` (comma-separated keywords)
-  - `.PROJECTURI` (GitHub or project URL)
-  - `.LICENSEURI` (license URL)
-  - `.ICONURI` (icon URL if available)
-  - `.EXTERNALMODULEDEPENDENCIES`
-  - `.REQUIREDSCRIPTS`
-  - `.EXTERNALSCRIPTDEPENDENCIES`
-  - `.RELEASENOTES`
-  - `.PRIVATEDATA`
-  - `.SYNOPSIS` (brief description)
-  - `.DESCRIPTION` (detailed explanation)
-  - `.PARAMETER` (descriptions for each parameter)
-  - `.EXAMPLE` (practical usage examples)
-  - `.OUTPUTS` (type of output returned)
-  - `.NOTES` (additional information)
-    - Do not duplicate information from PSScriptInfo in .NOTES (e.g., .Version, .Author, .CompanyName, .Copyright, .CompatiblePSEditions, .GUID)
+- **Code Organization (Regions):** Use `#region` and `#endregion` to logically group large blocks of code (e.g., helper functions, main execution logic, configuration loading) for better readability and code folding in IDEs. Use descriptive names after `#region` and optionally after `#endregion`.
+- **Comment-Based Help and Metadata:** All normative requirements are centralized in the `Comment-Based Help and Metadata` section below. Do not duplicate or redefine those rules elsewhere in this document.
+
+## Style Guides
+
+- All prose, documentation, and help text must be checked against the repository style guides.
+- Install Vale and use it for writing quality enforcement.
+
+```powershell
+winget install errata-ai.Vale
+```
 
 ### Characters and Glyphs
 
@@ -137,58 +260,62 @@ mainfont: "Cascadia Mono NF"
 
 **Preferred Mappings:**
 
-- `$PSStyle.FileInfo.Directory`
-- `$PSStyle.FileInfo.SymbolicLink`
-- `$PSStyle.FileInfo.Executable`
-- `$PSStyle.FileInfo.Extension`
-- `$PSStyle.Formatting.FormatAccent`
-- `$PSStyle.Formatting.ErrorAccent`
-- `$PSStyle.Formatting.Error`
-- `$PSStyle.Formatting.Warning`
-- `$PSStyle.Formatting.Verbose`
-- `$PSStyle.Formatting.Debug`
-- `$PSStyle.Formatting.TableHeader`
-- `$PSStyle.Formatting.CustomTableHeaderLabel`
-- `$PSStyle.Formatting.FeedbackName`
-- `$PSStyle.Formatting.FeedbackText`
-- `$PSStyle.Formatting.FeedbackAction`
+```powershell
+$PSStyle.FileInfo.Directory
+$PSStyle.FileInfo.SymbolicLink
+$PSStyle.FileInfo.Executable
+$PSStyle.FileInfo.Extension
+$PSStyle.Formatting.FormatAccent
+$PSStyle.Formatting.ErrorAccent
+$PSStyle.Formatting.Error
+$PSStyle.Formatting.Warning
+$PSStyle.Formatting.Verbose
+$PSStyle.Formatting.Debug
+$PSStyle.Formatting.TableHeader
+$PSStyle.Formatting.CustomTableHeaderLabel
+$PSStyle.Formatting.FeedbackName
+$PSStyle.Formatting.FeedbackText
+$PSStyle.Formatting.FeedbackAction
 
+```
 **Fallback Mappings:**
 
 _Use specific foreground/background colors only when semantic mappings are unavailable._
 
-- `$PSStyle.Foreground.Black`
-- `$PSStyle.Foreground.BrightBlack`
-- `$PSStyle.Foreground.White`
-- `$PSStyle.Foreground.BrightWhite`
-- `$PSStyle.Foreground.Red`
-- `$PSStyle.Foreground.BrightRed`
-- `$PSStyle.Foreground.Magenta`
-- `$PSStyle.Foreground.BrightMagenta`
-- `$PSStyle.Foreground.Blue`
-- `$PSStyle.Foreground.BrightBlue`
-- `$PSStyle.Foreground.Cyan`
-- `$PSStyle.Foreground.BrightCyan`
-- `$PSStyle.Foreground.Green`
-- `$PSStyle.Foreground.BrightGreen`
-- `$PSStyle.Foreground.Yellow`
-- `$PSStyle.Foreground.BrightYellow`
-- `$PSStyle.Background.Black`
-- `$PSStyle.Background.BrightBlack`
-- `$PSStyle.Background.White`
-- `$PSStyle.Background.BrightWhite`
-- `$PSStyle.Background.Red`
-- `$PSStyle.Background.BrightRed`
-- `$PSStyle.Background.Magenta`
-- `$PSStyle.Background.BrightMagenta`
-- `$PSStyle.Background.Blue`
-- `$PSStyle.Background.BrightBlue`
-- `$PSStyle.Background.Cyan`
-- `$PSStyle.Background.BrightCyan`
-- `$PSStyle.Background.Green`
-- `$PSStyle.Background.BrightGreen`
-- `$PSStyle.Background.Yellow`
-- `$PSStyle.Background.BrightYellow`
+```powershell
+$PSStyle.Foreground.Black
+$PSStyle.Foreground.BrightBlack
+$PSStyle.Foreground.White
+$PSStyle.Foreground.BrightWhite
+$PSStyle.Foreground.Red
+$PSStyle.Foreground.BrightRed
+$PSStyle.Foreground.Magenta
+$PSStyle.Foreground.BrightMagenta
+$PSStyle.Foreground.Blue
+$PSStyle.Foreground.BrightBlue
+$PSStyle.Foreground.Cyan
+$PSStyle.Foreground.BrightCyan
+$PSStyle.Foreground.Green
+$PSStyle.Foreground.BrightGreen
+$PSStyle.Foreground.Yellow
+$PSStyle.Foreground.BrightYellow
+$PSStyle.Background.Black
+$PSStyle.Background.BrightBlack
+$PSStyle.Background.White
+$PSStyle.Background.BrightWhite
+$PSStyle.Background.Red
+$PSStyle.Background.BrightRed
+$PSStyle.Background.Magenta
+$PSStyle.Background.BrightMagenta
+$PSStyle.Background.Blue
+$PSStyle.Background.BrightBlue
+$PSStyle.Background.Cyan
+$PSStyle.Background.BrightCyan
+$PSStyle.Background.Green
+$PSStyle.Background.BrightGreen
+$PSStyle.Background.Yellow
+$PSStyle.Background.BrightYellow
+```
 
 ## Naming Conventions
 
@@ -238,6 +365,268 @@ _Use specific foreground/background colors only when semantic mappings are unava
 - Loop/index variables: avoid single-letter names like `i` or `j`; prefer `item`, `index1`, `index2`, or `iteration`
 - Exceptions: Only use acronyms when interoperating with external APIs or contracts that require them
 
+## Comment-Based Help and Metadata
+
+All PowerShell artifacts must include comprehensive metadata. Three categories require different metadata structures:
+
+### PowerShell Module Manifests (.psd1)
+
+Every module must have a complete module manifest generated via `New-ModuleManifest`. All metadata keywords must be explicitly defined with fully populated strings—never omit or leave default block attributes.
+
+**Required fields:**
+
+```powershell
+@{
+    RootModule = 'MyModule.psm1'
+    ModuleVersion = '2605.20.1800'
+    CompatiblePSEditions = @('Core', 'Desktop')
+    GUID = 'FD777A6E-7AE7-4368-8EBD-06EDC6B02784'
+    Author = 'DevOps Engineering Team'
+    CompanyName = 'Enterprise Solutions Corp'
+    Copyright = 'CC BY-NC-SA  2026 By STS'
+    Description = 'Provides core automation utilities.'
+    PowerShellVersion = '7.6'
+    DotNetFrameworkVersion = '4.8'
+    RequiredModules = @(
+        @{ ModuleName = 'Az.Accounts'; ModuleVersion = '3.0.0' }
+    )
+    RequiredScripts = @()
+    RequiredAssemblies = @()
+    NestedModules = @()
+    FunctionsToExport = @('Get-Asset', 'Sync-Group')
+    CmdletsToExport = @()
+    VariablesToExport = @()
+    AliasesToExport = @()
+    PrivateData = @{
+        PSData = @{
+            Tags = @('Enterprise', 'Automation', 'ActiveDirectory')
+            LicenseUri = 'https://creativecommons.org/licenses/by-nc-sa/4.0/'
+            ProjectUri = 'https://github.com/STS-Consulting/PowerShell'
+            IconUri = 'https://github.com/STS-Consulting/PowerShell/raw/monad/Resources/STS.Consulting.png'
+            ReleaseNotes = 'Release introducing core capabilities.'
+        }
+    }
+    DefaultCommandPrefix = 'STS'
+}
+```
+
+### PowerShell Standalone Scripts (.ps1)
+
+Every standalone script must feature a complete metadata header generated via `Microsoft.PowerShell.PSResourceGet\New-PSScriptFileInfo`. The `<#PSScriptInfo ... #>` block must contain all metadata keywords with fully populated strings.
+
+**Required structure:**
+
+```powershell
+<#PSScriptInfo
+.VERSION 2605.20.1800
+.GUID FD777A6E-BBC1-4F86-A4FC-EE0E7989372A
+.AUTHOR Scott T Surber
+.COMPANYNAME STS Consulting
+.COPYRIGHT CC BY-NC-SA  2026 By STS
+.TAGS Storage, Optimization, Disk, Maintenance
+.LICENSEURI https://creativecommons.org/licenses/by-nc-sa/4.0/
+.PROJECTURI https://github.com/STS-Consulting/PowerShell
+.ICONURI https://github.com/STS-Consulting/PowerShell/raw/monad/Resources/STS.Consulting.png
+.EXTERNALMODULEDEPENDENCIES
+.REQUIREDMODULES @{ModuleName = 'Storage'; ModuleVersion = '2.0.0'}
+.RELEASENOTES Fixed memory leak when optimizing fragmented volumes.
+.PRIVATEDATA Cleartext storage credentials are strictly banned from this execution context.
+#>
+
+<#
+.SYNOPSIS
+    Optimizes and defragments attached local storage volumes.
+.DESCRIPTION
+    Analyzes local NTFS and ReFS filesystems, runs slab consolidation for virtualized disks, and issues TRIM commands for SSD targets.
+#>
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$VolumeLetter
+)
+
+# Script body follows...
+```
+
+### PowerShell Functions
+
+Every public/production function must include advanced Comment-Based Help (CBH). The CBH block must contain a minimum set of keywords:
+
+**Minimum required keywords:**
+- `.SYNOPSIS`: One-line concise summary
+- `.DESCRIPTION`: Detailed breakdown of functionality and side effects
+- `.PARAMETER <Name>`: Required for **every parameter** the function accepts. Omit entirely if function accepts no parameters.
+- `.INPUTS`: Required if the function accepts pipeline input. Must be paired with `.OUTPUTS`.
+- `.OUTPUTS`: Required if the function produces output (including pipeline output). Must be paired with `.INPUTS` if pipeline input is accepted.
+- `.NOTES`: Technical details, execution gotchas, unique context
+
+**CRITICAL:** Never duplicate information in `.NOTES` that already exists in the parent Script or Module header (Author, Copyright, CompanyName, Version).
+
+#### Minimal Function Example
+
+Use this for simple functions with straightforward logic:
+
+```powershell
+function Convert-EpochToDateTime {
+    <#
+    .SYNOPSIS
+        Converts a Unix epoch timestamp into a standard PowerShell DateTime object.
+
+    .DESCRIPTION
+        Accepts a 10-digit (seconds) or 13-digit (milliseconds) integer representation of a Unix timestamp and converts it to local or UTC time. Validates input boundaries to prevent overflow errors.
+
+    .PARAMETER EpochTimestamp
+        The raw integer timestamp value parsed from API responses or log exports.
+
+    .PARAMETER UseUtc
+        Forces output DateTime object to reflect Coordinated Universal Time (UTC) instead of local machine's system time zone.
+
+    .INPUTS
+        System.Int64. Accepts Unix epoch integers via pipeline.
+
+    .OUTPUTS
+        System.DateTime. Emits an object representing the exact point in time.
+
+    .NOTES
+        - Internal calculations utilize [DateTimeOffset]::FromUnixTimeSeconds dynamically.
+        - Requires minimum .NET Standard 2.0 / CoreCLR execution.
+        - For datasets exceeding 100,000 entries, consider off-thread processing.
+
+    .EXAMPLE
+        Convert-EpochToDateTime -EpochTimestamp 1609459200
+        Returns: 2021-01-01 00:00:00 (local time)
+
+    .EXAMPLE
+        1609459200, 1640995200 | Convert-EpochToDateTime -UseUtc
+        Converts multiple timestamps to UTC via pipeline.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [int64]$EpochTimestamp,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UseUtc
+    )
+
+    process {
+        $dateObject = [DateTimeOffset]::FromUnixTimeSeconds($EpochTimestamp)
+
+        if ($UseUtc) {
+            $dateObject.UtcDateTime
+        } else {
+            $dateObject.LocalDateTime
+        }
+    }
+}
+```
+
+#### Full Function Example
+
+Use this template for complex functions with multiple parameters, error handling, and advanced features:
+
+```powershell
+function Set-ExampleData {
+    <#
+    .SYNOPSIS
+        Set example data demonstrating approved patterns.
+
+    .DESCRIPTION
+        Sets example data with proper parameter validation, pipeline support, ShouldProcess implementation, and comprehensive error handling. Supports both individual and batch operations.
+
+    .PARAMETER Name
+        The name of the resource to update. Accepts pipeline input for batch processing.
+
+    .PARAMETER Environment
+        The environment context (Development, Test, or Production). Defaults to Development.
+
+    .PARAMETER PassThru
+        Return the updated object. Without this switch, function produces no output on success.
+
+    .PARAMETER Force
+        Bypass confirmation prompts for automated execution.
+
+    .INPUTS
+        System.String. Resource name via pipeline by property name or positional.
+
+    .OUTPUTS
+        PSCustomObject with properties: Name, Environment, RetrievedAt, CorrelationId.
+        PSTypeName: 'CustomModule.ExampleData'
+
+    .NOTES
+        - Implements proper ShouldProcess for confirmation handling.
+        - Uses correlation IDs for distributed tracing and troubleshooting.
+        - Async operations are NOT blocking; monitor CorrelationId for status.
+        - Do NOT duplicate this function's metadata in parent module manifest.
+
+    .EXAMPLE
+        Set-ExampleData -Name 'Resource1' -Environment 'Development'
+        Sets example data for Resource1 in Development environment.
+
+    .EXAMPLE
+        Set-ExampleData -Name 'Resource1' -PassThru -Force
+        Sets data and returns object without confirmation, bypassing ShouldProcess.
+
+    .EXAMPLE
+        'Resource1', 'Resource2' | Set-ExampleData -PassThru
+        Batch sets data for multiple resources via pipeline.
+
+    .EXAMPLE
+        Set-ExampleData -Name 'Resource1' -WhatIf
+        Shows what would happen without performing the actual update.
+    #>
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter()]
+        [ValidateSet('Development','Test','Production')]
+        [string]$Environment = 'Development',
+
+        [Parameter()]
+        [switch]$PassThru,
+
+        [Parameter()]
+        [switch]$Force
+    )
+
+    begin {
+        Write-Verbose -Message "[Set-ExampleData] Starting data update"
+        $timestamp = Get-Date -Format 'yyMMdd_HHmm'
+        $correlationId = [guid]::NewGuid()
+    }
+
+    process {
+        if ($Force -or $PSCmdlet.ShouldProcess($Name, 'Set example data')) {
+            $result = [PSCustomObject]@{
+                PSTypeName = 'CustomModule.ExampleData'
+                Name = $Name
+                Environment = $Environment
+                RetrievedAt = $timestamp
+                CorrelationId = $correlationId
+            }
+
+            Write-Information -MessageData "[Set-ExampleData] Updated data for: $Name (CorrelationId: $correlationId)"
+
+            if ($PassThru) {
+                Write-Output -InputObject $result
+            }
+        }
+    }
+
+    end {
+        Write-Verbose -Message "[Set-ExampleData] Completed data update"
+    }
+
+    clean {
+        Remove-Variable -Name 'timestamp'
+        Remove-Variable -Name 'correlationId'
+        Remove-Variable -Name 'result'
+    }
+}
+```
+
 ## Project Structure and Organization
 
 ### Recommended Layout
@@ -273,7 +662,7 @@ ModuleName/
 - **Validation:** Implement proper validation attributes
 - **Tab Completion:** Enable tab completion with ValidateSet where appropriate
 - **Aliases:** Use Parameter aliases sparingly for backward compatibility
-- **Explicit Parameters:** Prefer explicitly passing parameter names in calls (e.g., `-Path $Path`)
+- **Explicit Parameters:** Explicitly pass parameter names in calls (e.g., `-Path $Path`)
 - **Splatting:** Use splatting for complex calls to improve readability (e.g., `& Command @parameters`)
 - **Logical Operators:** Use `-not` instead of `!` for clarity
 - **Wildcards:** Avoid `SupportsWildcards` for path parameters for security reasons
@@ -335,7 +724,7 @@ ModuleName/
   ```
 - **Platform Requirements:** Document with `#Requires` statements
   ```powershell
-  #Requires -Version 7.2
+  #Requires -Version 7.6
   #Requires -Modules Az.Accounts
   #Requires -PSEdition Core
   ```
@@ -359,7 +748,7 @@ ModuleName/
 - **Rich Objects:** Return structured objects (PSCustomObject), not formatted text
 - **Type Names:** Use PSTypeName for custom type identification when beneficial
 - **Consistency:** Ensure consistent output structure across all code paths
-- **Avoid Write-Host:** Never use Write-Host for data output; reserve for interactive display only
+- **Write-Host:** Never allowed
 - **Enable Processing:** Structure output to enable downstream cmdlet processing
 
 ```powershell
@@ -409,6 +798,7 @@ function Update-ResourceStatus {
 
     begin {
         $timestamp = Get-Date
+        $resource = $null
     }
 
     process {
@@ -416,7 +806,7 @@ function Update-ResourceStatus {
         $resource = Update-InternalResource -Name $Name
 
         # Status update (visible with -InformationAction Continue)
-        Write-Information -MessageData "Information: [Update-ResourceStatus] Updated resource: $Name"
+        Write-Information -MessageData "[Update-ResourceStatus] Updated resource: $Name"
 
         # Only output if PassThru requested
         if ($PassThru) {
@@ -424,17 +814,18 @@ function Update-ResourceStatus {
         }
     }
     end {
-        Write-Information -MessageData "Information: [Update-ResourceStatus] Updated resource: $Name"
+        Write-Information -MessageData "[Update-ResourceStatus] Completed resource status updates"
     }
     clean {
-        Remove-Variable -Name 'timestamp' -ErrorAction SilentlyContinue
-        Remove-Variable -Name 'resource' -ErrorAction SilentlyContinue
+        Remove-Variable -Name 'timestamp'
+        Remove-Variable -Name 'resource'
     }
 }
 ```
 
 ### CLEAN Block Guidelines
 
+- You should not hide your work. Always: `Remove-Variable -Name 'VARIABLENAME'`. NEVER: `Remove-Variable -Name 'VARIABLENAME' -ErrorAction SilentlyContinue`.
 - Use a `clean` block to remove temporary, function-created variables (timestamps, loop counters, intermediate objects)
 - Do not remove parameters or caller-supplied values; only clean up locals that this function created
 - Close or dispose external resources in `finally` or `clean` (files, connections), ensuring operations are idempotent
@@ -447,8 +838,8 @@ function Update-ResourceStatus {
 - **Enable Support:** Use `[CmdletBinding(SupportsShouldProcess = $true)]` for operations that modify system state
 - **Confirm Impact:** Set appropriate `ConfirmImpact` level (Low, Medium, High)
 - **ShouldProcess Call:** Call `$PSCmdlet.ShouldProcess($target, $action)` before making changes
-- **ShouldContinue:** Use for additional confirmations beyond standard -WhatIf/-Confirm
-- **Force Parameter Required:** Whenever `ShouldProcess` or `ShouldContinue` is used, always include a `[switch]$Force` parameter to allow bypassing confirmations. Check `$Force` before calling ShouldProcess/ShouldContinue: `if ($Force -or $PSCmdlet.ShouldProcess(...))`
+- **ShouldContinue:** Use for additional confirmations beyond standard -WhatIf/-Confirm; do not build custom menu or multiple-choice prompt frameworks
+- **Force Parameter Required:** Whenever `ShouldProcess` or `ShouldContinue` is used, always include a `[switch]$Force` parameter to allow bypassing confirmations. Check `$Force` before calling `ShouldProcess`/`ShouldContinue`: `if ($Force -or $PSCmdlet.ShouldProcess(...))`
 
 ```powershell
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
@@ -468,15 +859,16 @@ if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove resource")) {
 ### Message Streams
 
 - **Write-Information:** Status updates and informational messages (visible with `-InformationAction Continue`)
-- **Write-Verbose:** Operational details for trouleshooting (visible with `-Verbose`)
+- **Write-Verbose:** Operational details for troubleshooting (visible with `-Verbose`)
+- **Write-Debug:** Diagnostic detail for deep troubleshooting (visible with `-Debug`)
 - **Write-Warning:** Warning conditions that do not stop execution
 - **Write-Error:** Non-terminating errors (execution continues)
 - **throw:** Terminating errors (execution stops immediately)
-- **Avoid Write-Host:** Never use for data output
-- **Avoid Read-Host:** Never use for data input
+- **Write-Host:** Never allowed
+- **Read-Host:** Never allowed
 
 ```powershell
-Write-Information -MessageData "INFORMATIONProcessing resource: $Name"
+Write-Information -MessageData "Processing resource: $Name"
 Write-Verbose -Message "Connection string: $connectionString"
 Write-Warning -Message "Resource $Name is deprecated" -WarningAction Continue
 Write-Error -Message "Failed to process $Name" -ErrorAction Continue
@@ -504,10 +896,10 @@ process {
         $result = Invoke-RiskyOperation -Name $Name
     }
     catch [System.UnauthorizedAccessException] {
-        Write-Error "[Invoke-RiskyOperation] Access denied for resource '$Name'. CorrelationId: $correlationId" -ErrorAction Stop
+        Write-Error -Message "[Invoke-RiskyOperation] Access denied for resource '$Name'. CorrelationId: $correlationId" -ErrorAction Stop
     }
     catch {
-        Write-Error "[Invoke-RiskyOperation] Unexpected error processing '$Name': $($PSItem.Exception.Message). CorrelationId: $correlationId"
+        Write-Error -Message "[Invoke-RiskyOperation] Unexpected error processing '$Name': $($PSItem.Exception.Message). CorrelationId: $correlationId"
         throw
     }
     finally {
@@ -519,13 +911,13 @@ process {
 
 ### Non-Interactive Design
 
-- **Parameter Input:** Accept all input via parameters (never use Read-Host in production scripts)
+- **Parameter Input:** Accept all input via parameters (never use `Read-Host`)
 - **Automation Ready:** Design for unattended execution (scheduled tasks, CI/CD)
 - **Progress Indication:** Use `Write-Progress` for long-running operations (loops > few seconds)
 - **Documentation:** Document all required inputs in comment-based help
 - **Default Values:** Provide sensible defaults where appropriate
 
-````powershell
+```powershell
 function Process-LargeDataset {
     [CmdletBinding()]
     param(
@@ -553,11 +945,12 @@ function Process-LargeDataset {
     }
 
     clean {
-        Remove-Variable -Name 'totalItems' -ErrorAction SilentlyContinue
-        Remove-Variable -Name 'currentItem' -ErrorAction SilentlyContinue
-        Remove-Variable -Name 'item' -ErrorAction SilentlyContinue
+        Remove-Variable -Name 'totalItems'
+        Remove-Variable -Name 'currentItem'
+        Remove-Variable -Name 'item'
     }
 }
+```
 
 ## Security Guidance
 
@@ -608,11 +1001,6 @@ $safePath = Resolve-Path -Path $Path -ErrorAction Stop
 - **Authentication:** Use modern authentication (OAuth, managed identities) over basic auth
 - **Logging:** Never log sensitive data (passwords, tokens, PII)
 
-### Module Imports
-
-- **Explicit Imports:** Module imports must be specified by file name and never a wildcard, for security reasons.
-- **Avoid Wildcards:** Do not use `Import-Module *` or `Get-ChildItem -Recurse | Where-Object { $_.Extension -eq '.ps1' } | Dot-Source`. Explicitly list files to be imported or sourced.
-
 ## Performance Optimization
 
 ### General Guidelines
@@ -651,17 +1039,17 @@ $result = $sb.ToString()
 # BAD: Quadratic performance
 $results = @()
 foreach ($item in $largeCollection) {
-    $results += Process-Item $item  # Creates new array each time
+    $results += Process-Item -Item $item  # Creates new array each time
 }
 
 # GOOD: Linear performance
 $results = [System.Collections.Generic.List[object]]::new()
 foreach ($item in $largeCollection) {
-    $results.Add((Process-Item $item))
+    $results.Add((Process-Item -Item $item))
 }
 
 # BEST: Pipeline streaming (no accumulation)
-$largeCollection | ForEach-Object { Process-Item $PSItem }
+$largeCollection | ForEach-Object { Process-Item -Item $PSItem }
 ```
 
 ### Filtering and Projection
@@ -729,9 +1117,10 @@ Describe 'Get-UserProfile' {
   - Example:
     ```powershell
     $repoRoot   = (Resolve-Path -Path (Join-Path $PSScriptRoot '..\..')).Path
+        $helperPath = Resolve-Path -Path (Join-Path $PSScriptRoot '..\Support\TestHelpers.ps1')
     $scriptPath = Resolve-Path -Path (Join-Path $repoRoot 'Scripts\Copy-MediaBatch.ps1')
+        . $helperPath
     . $scriptPath
-    . (Join-Path $PSScriptRoot '..\Support\TestHelpers.ps1')
     Initialize-StandardTest
     ```
 - **Typed mocks:** When mocking CIM/WMI or external APIs, return objects with correct numeric types and property names. Prefer `PSCustomObject` with explicit properties.
@@ -759,7 +1148,8 @@ Template header for new test files:
 
 ```powershell
 BeforeAll {
-    . (Join-Path $PSScriptRoot '..\Support\TestHelpers.ps1')
+    $helperPath = Resolve-Path -Path (Join-Path $PSScriptRoot '..\Support\TestHelpers.ps1')
+    . $helperPath
     Initialize-StandardTest
 
     $repoRoot    = (Resolve-Path -Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -836,7 +1226,7 @@ function Get-Timestamp {
 function Set-GlobalPreference {
     param ([ValidateSet('SilentlyContinue','Stop','Continue','Inquire','Break')][string]$Level)
     $global:InformationPreference = $Level
-    Write-Information -MessageData "INFORMATION: Set global InformationPreference to $Level"
+    Write-Information -MessageData "Set global InformationPreference to $Level"
 }
 ```
 
@@ -932,7 +1322,7 @@ Required VS Code extensions for Git file management:
 ```powershell
 code --install-extension 'codezombiech.gitignore'
 code --install-extension 'EditorConfig.EditorConfig'
-```
+
 code --install-extension 'bierner.markdown-footnotes'
 code --install-extension 'vstirbu.vscode-mermaid-preview'
 ```
@@ -953,6 +1343,35 @@ Invoke-PSDocs -Path ./source -OutputPath ./documentation/PSDocs
 
 ```powershell
 function New-Resource {
+    <#
+    .SYNOPSIS
+        Creates a new resource using approved action-cmdlet patterns.
+
+    .DESCRIPTION
+        Creates a resource with parameter validation, pipeline support, ShouldProcess, and structured error handling.
+        By default, this action cmdlet produces no output unless -PassThru is specified.
+
+    .PARAMETER Name
+        The resource name to create.
+
+    .PARAMETER Environment
+        The target environment context.
+
+    .PARAMETER Force
+        Bypass confirmation prompts.
+
+    .PARAMETER PassThru
+        Return the created resource object.
+
+    .INPUTS
+        System.String. Resource name via pipeline by property name or positional.
+
+    .OUTPUTS
+        PSCustomObject. Returns created resource only when -PassThru is specified.
+
+    .NOTES
+        End-to-end example aligned with action cmdlet and ShouldProcess guidance.
+    #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -964,11 +1383,15 @@ function New-Resource {
         [string]$Environment = 'Development',
 
         [Parameter()]
+        [switch]$PassThru,
+
+        [Parameter()]
         [switch]$Force
     )
 
     begin {
         Write-Verbose -Message "Starting resource creation process"
+        $resource = $null
     }
 
     process {
@@ -979,7 +1402,12 @@ function New-Resource {
                     Environment = $Environment
                     Created = Get-Date
                 }
-                Write-Output $resource
+
+                Write-Information -MessageData "[New-Resource] Created resource: $Name"
+
+                if ($PassThru) {
+                    Write-Output -InputObject $resource
+                }
             }
         }
         catch {
@@ -991,7 +1419,7 @@ function New-Resource {
         Write-Verbose -Message "Completed resource creation process"
     }
     clean {
-        Remove-Variable -Name 'resource' -ErrorAction SilentlyContinue
+        Remove-Variable -Name 'resource'
     }
 }
 ```
@@ -1029,7 +1457,7 @@ This is a Windows environment with PowerShell - use proper PowerShell cmdlets an
 ### Common Pitfalls to Avoid
 
 - **Aliases in Scripts:** Never use aliases (gci, ?, %, select, etc.) in script files
-- **Write-Host Abuse:** Do not use Write-Host for data output or pipeline operations
+- **Write-Host/Read-Host:** Never allowed
 - **Array Concatenation:** Avoid `+=` in loops with large datasets
 - **Hardcoded Paths:** Use `$PSScriptRoot` for relative paths
 - **Missing Validation:** Always validate user input, especially paths and credentials
@@ -1038,43 +1466,48 @@ This is a Windows environment with PowerShell - use proper PowerShell cmdlets an
 
 ## Examples (Minimal Patterns)
 
+#region Functions
+
 ### 1. Advanced Function Template
 
 ```powershell
-function Get-ExampleData {
+function Set-ExampleData {
     <#
     .SYNOPSIS
-        Get example data demonstrating approved patterns
+        Set example data demonstrating approved patterns
 
     .DESCRIPTION
-        Retrieves example data with proper parameter validation,
+        Sets example data with proper parameter validation,
         pipeline support, and ShouldProcess implementation.
 
     .PARAMETER Name
-        The name of the resource to retrieve
+        The name of the resource to update
 
     .PARAMETER Environment
         The environment context (Development, Test, or Production)
 
     .PARAMETER PassThru
-        Return the retrieved object
+        Return the updated object
 
     .PARAMETER Force
         Bypass confirmation prompts
 
     .EXAMPLE
-        Get-ExampleData -Name 'Resource1' -Environment 'Development'
-        Retrieves example data for Resource1 in Development environment
+        Set-ExampleData -Name 'Resource1' -Environment 'Development'
+        Sets example data for Resource1 in Development environment
 
     .EXAMPLE
-        'Resource1', 'Resource2' | Get-ExampleData -PassThru -Force
-        Retrieves data for multiple resources via pipeline without confirmation
+        'Resource1', 'Resource2' | Set-ExampleData -PassThru -Force
+        Sets data for multiple resources via pipeline without confirmation
+
+    .INPUTS
+        System.String. Resource name via pipeline by property name or positional.
 
     .OUTPUTS
         PSCustomObject with Name, Environment, and RetrievedAt properties
 
     .NOTES
-        Something relavent that is NOT included in PSScriptInfo
+        Something relevant that is NOT included in PSScriptInfo
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
@@ -1091,13 +1524,17 @@ function Get-ExampleData {
 
         [Parameter()]
         [switch]$Force
-    )    begin {
-        Write-Verbose -Message "Starting example data retrieval"
+    )
+
+    #region Execution
+    begin {
+        Write-Verbose -Message "Starting example data update"
         $timestamp = Get-Date -Format 'yyMMdd_HHmm'
+        $result = $null
     }
 
     process {
-        if ($Force -or $PSCmdlet.ShouldProcess($Name, 'Retrieve example data')) {
+        if ($Force -or $PSCmdlet.ShouldProcess($Name, 'Set example data')) {
             $result = [PSCustomObject]@{
                 PSTypeName = 'CustomModule.ExampleData'
                 Name = $Name
@@ -1105,19 +1542,22 @@ function Get-ExampleData {
                 RetrievedAt = $timestamp
             }
 
-            Write-Information -MessageData "Retrieved data for: $Name"
+            Write-Information -MessageData "Updated data for: $Name"
 
             if ($PassThru) {
-                Write-Output $result
+                Write-Output -InputObject $result
             }
         }
-    }    end {
-        Write-Verbose -Message "Completed example data retrieval"
+    }
+
+    end {
+        Write-Verbose -Message "Completed example data update"
     }
     clean {
-        Remove-Variable -Name 'timestamp' -ErrorAction SilentlyContinue
-        Remove-Variable -Name 'result' -ErrorAction SilentlyContinue
+        Remove-Variable -Name 'timestamp'
+        Remove-Variable -Name 'result'
     }
+    #endregion Execution
 }
 ```
 
@@ -1136,7 +1576,7 @@ function Set-ResourceConfiguration {
     .PARAMETER Name
         The resource name to configure
 
-    .PARAMETER ConfigValue
+    .PARAMETER ConfigurationValue
         The configuration value to set
 
     .PARAMETER Force
@@ -1148,8 +1588,14 @@ function Set-ResourceConfiguration {
     .EXAMPLE
         Set-ResourceConfiguration -Name 'MyResource' -ConfigurationValue 'NewValue' -PassThru
 
+    .INPUTS
+        System.String. Resource name via pipeline by property name.
+
+    .OUTPUTS
+        PSCustomObject. Returns configured resource only when -PassThru is specified.
+
     .NOTES
-        Something relavent that is NOT included in PSScriptInfo
+        Something relevant that is NOT included in PSScriptInfo
     #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
@@ -1171,6 +1617,7 @@ function Set-ResourceConfiguration {
     begin {
         $ErrorActionPreference = 'Stop'
         $correlationId = [guid]::NewGuid()
+        $resource = $null
         Write-Verbose -Message "[Set-ResourceConfiguration] Starting configuration update (CorrelationId: $correlationId)"
     }
 
@@ -1195,10 +1642,10 @@ function Set-ResourceConfiguration {
             }
         }
         catch [System.UnauthorizedAccessException] {
-            Write-Error "[Set-ResourceConfiguration] Access denied for '$Name'. CorrelationId: $correlationId" -ErrorAction Stop
+            Write-Error -Message "[Set-ResourceConfiguration] Access denied for '$Name'. CorrelationId: $correlationId" -ErrorAction Stop
         }
         catch {
-            Write-Error "[Set-ResourceConfiguration] Failed to configure '$Name': $($PSItem.Exception.Message). CorrelationId: $correlationId"
+            Write-Error -Message "[Set-ResourceConfiguration] Failed to configure '$Name': $($PSItem.Exception.Message). CorrelationId: $correlationId"
             throw
         }
     }
@@ -1207,8 +1654,8 @@ function Set-ResourceConfiguration {
         Write-Verbose -Message "[Set-ResourceConfiguration] Configuration update completed"
     }
     clean {
-        Remove-Variable -Name 'correlationId' -ErrorAction SilentlyContinue
-        Remove-Variable -Name 'resource' -ErrorAction SilentlyContinue
+        Remove-Variable -Name 'correlationId'
+        Remove-Variable -Name 'resource'
     }
 }
 ```
@@ -1237,11 +1684,14 @@ function Get-UserProfile {
     .EXAMPLE
         'jdoe', 'asmith' | Get-UserProfile
 
+    .INPUTS
+        System.String. Username via pipeline by property name or positional.
+
     .OUTPUTS
         PSCustomObject with user profile information
 
     .NOTES
-        Something relavent that is NOT included in PSScriptInfo
+        Something relevant that is NOT included in PSScriptInfo
     #>
     [CmdletBinding()]
     param(
@@ -1256,6 +1706,7 @@ function Get-UserProfile {
 
     begin {
         Write-Verbose -Message "[Get-UserProfile] Starting user profile retrieval"
+        $profile = $null
     }
 
     process {
@@ -1270,10 +1721,10 @@ function Get-UserProfile {
                 Domain = $env:USERDOMAIN
             }
 
-            Write-Output $profile
+            Write-Output -InputObject $profile
         }
         catch {
-            Write-Error "[Get-UserProfile] Failed to retrieve profile for '$Username': $($PSItem.Exception.Message)"
+            Write-Error -Message "[Get-UserProfile] Failed to retrieve profile for '$Username': $($PSItem.Exception.Message)"
         }
     }
 
@@ -1281,20 +1732,22 @@ function Get-UserProfile {
         Write-Verbose -Message "[Get-UserProfile] User profile retrieval completed"
     }
     clean {
-        Remove-Variable -Name 'profile' -ErrorAction SilentlyContinue
+        Remove-Variable -Name 'profile'
     }
 }
 ```
+#endregion Functions
 
 ## Deliverables and verification checklist
 
 - Generated functions include comment-based help, validation, and follow naming conventions.
 - A minimal Pester test accompanies each new public function.
 - Scripts pass Invoke-ScriptAnalyzer and basic smoke tests.
+- Code is organized into logical `#region` and `#endregion` blocks.
 - Documentation and Specification files are updated accordingly.
+
 
 ## Additional notes
 
 - Keep guidance concise and pragmatic. Prefer concrete code examples over abstract rules when possible.
 - Regularly review and update this guidance as PowerShell best practices evolve.
-````
