@@ -3,7 +3,7 @@ applyTo: "**/*.ps1,**/*.ps1xml,**/*.psc1,**/*.psd1,**/*.psm1,**/*.pssc,**/*.psrc
 description: "Comprehensive PowerShell development guidance for AI-assisted authoring. Combines Microsoft cmdlet guidelines and community best practices."
 ---
 
-## version: "2607.02.2100"
+## version: "2609.04.1600"
 
 # PowerShell Development Guidelines for GitHub Copilot
 
@@ -86,42 +86,51 @@ Treat this section as fail-closed: do not report completion until every required
 ### Definition Of Done (Generic)
 
 1. Scope
+
 - Apply all requested changes to every in-scope script.
 - Do not leave partial updates across files.
 
 2. Parameter Usage
+
 - Prefer explicit named parameters for cmdlet calls unless positional form is explicitly required.
 - For user-requested style examples, follow the exact style requested.
 
 3. PowerShell Style
+
 - Use PowerShell-native commands and patterns.
 - Do not use bash or Linux shell syntax in scripts or examples.
 - Do not use backtick line continuation; use splatting or natural pipeline breaks.
-- Use $PSItem in pipelines instead of $_.
+- Use $PSItem in pipelines instead of $\_.
 
 4. Safety And Behavior
+
 - Preserve runtime behavior.
 - Avoid hidden workarounds or cosmetic substitutes.
 - If a user requests removal, remove the construct rather than replacing it with an equivalent disguise.
 
 5. Error Handling
+
 - Do not use empty catch blocks unless explicitly justified and documented.
 - Prefer targeted error handling with actionable context.
 
 6. Variable Quality
+
 - Use descriptive variable names.
 - Remove declared-but-unused variable assignments introduced during refactors.
 
 7. Output Hygiene
+
 - Remove visual separator lines and separator-string output.
 - Keep informational output concise and operationally meaningful.
 
 8. Validation After Every Edit Burst
+
 - Run deterministic checks from disk after changes.
 - Report exact before/after counts for required search patterns.
 - Run parse validation for every modified script and require ParseErrors = 0.
 
 9. Completion Rule
+
 - If any required check fails, continue fixing automatically.
 - Do not claim completion while any required check is non-zero or parsing fails.
 
@@ -209,9 +218,9 @@ Write-Information -MessageData "$moduleName: ($($module.Version))" -InformationA
 - **Brace Style:** One True Brace Style (opening brace at end of the line, closing brace on new line)
 - **Indentation:** Use 4-space indentation consistently
 - **Casing:**
-  - PascalCase for function and parameter names
-  - camelCase for private/local variables
-  - PascalCase for public variables
+    - PascalCase for function and parameter names
+    - camelCase for private/local variables
+    - PascalCase for public variables
 - **Line Length:** We use modern high-resolution monitors; Let the end user choose whether or not to use WordWrap. Keep lines readable; do not enforce a fixed maximum. Let the end user choose whether or not to use `Word Wrap`. This is an example of a long line that may be wrapped by the end user's editor based on their preferences.
 - **No Linebreaks in Messages** Do not use linebreaks (e.g., `\n` or backtick-n) in `Write-Information`, `Write-Verbose`, `Write-Warning`, or `Write-Error` messages.
 - **Pipeline Formatting:** Use line breaks after pipeline operators for readability
@@ -237,9 +246,9 @@ winget install errata-ai.Vale
 - Do not use glyphs in identifiers (function/parameter names); restrict to documentation, messages, and help text
 - Ensure files are saved as UTF-8BOM; verify rendering on non-NerdFont systems or provide a plain-text fallback when necessary
 - Often used glyphs:
-  - Horizontal Ellipsis …
-  - Interrobang ‽
-  - Section Sign §
+    - Horizontal Ellipsis …
+    - Interrobang ‽
+    - Section Sign §
 
 Example: specific copyright block for documentation
 
@@ -278,6 +287,7 @@ $PSStyle.Formatting.FeedbackText
 $PSStyle.Formatting.FeedbackAction
 
 ```
+
 **Fallback Mappings:**
 
 _Use specific foreground/background colors only when semantic mappings are unavailable._
@@ -333,11 +343,11 @@ $PSStyle.Background.BrightYellow
 - **Form:** Use singular form unless parameter always accepts multiple values
 - **Standards:** Follow PowerShell standard parameter names (Path, Name, Force, ComputerName, etc.)
 - **Common Parameters:**
-  - `Path` for file system paths
-  - `Name` for object identifiers
-  - `Force` to require explicit confirmation bypassing or overwriting
-  - `ComputerName` for remote computer targeting
-  - `Credential` for authentication
+    - `Path` for file system paths
+    - `Name` for object identifiers
+    - `Force` to require explicit confirmation bypassing or overwriting
+    - `ComputerName` for remote computer targeting
+    - `Credential` for authentication
 
 ### Variable Names
 
@@ -351,11 +361,11 @@ $PSStyle.Background.BrightYellow
 - **Scripts:** Always use full cmdlet names (Get-ChildItem, not gci, ls, or dir)
 - **Interactive:** Aliases acceptable for interactive shell use only
 - **Common Replacements:**
-  - Use `Where-Object` instead of `?` or `where`
-  - Use `ForEach-Object` instead of `%` or `foreach`
-  - Use `Get-ChildItem` instead of `ls`, `dir`, or `gci`
-  - Use `New-Item` instead of `mkdir` or `md`
-  - Use `Select-Object` instead of `select`
+    - Use `Where-Object` instead of `?` or `where`
+    - Use `ForEach-Object` instead of `%` or `foreach`
+    - Use `Get-ChildItem` instead of `ls`, `dir`, or `gci`
+    - Use `New-Item` instead of `mkdir` or `md`
+    - Use `Select-Object` instead of `select`
 
 ### Abbreviations
 
@@ -452,6 +462,7 @@ param(
 Every public/production function must include advanced Comment-Based Help (CBH). The CBH block must contain a minimum set of keywords:
 
 **Minimum required keywords:**
+
 - `.SYNOPSIS`: One-line concise summary
 - `.DESCRIPTION`: Detailed breakdown of functionality and side effects
 - `.PARAMETER <Name>`: Required for **every parameter** the function accepts. Omit entirely if function accepts no parameters.
@@ -653,6 +664,115 @@ ModuleName/
 - Organize by feature or domain when appropriate
 - Include README.md with usage examples
 
+## Standard Path Conventions
+
+All path references in scripts, documentation, and examples must conform to these conventions. Never introduce new folders at the root of any drive — no `C:\Backups`, `D:\Media`, or equivalent patterns are permitted.
+
+### Scope Boundaries
+
+| Scope  | Root Variable      | Purpose                                      |
+| ------ | ------------------ | -------------------------------------------- |
+| User   | `$ENV:USERPROFILE` | Personal, single-user content and settings   |
+| Public | `$ENV:PUBLIC`      | Shared content accessible to all local users |
+
+### User-Scoped Paths
+
+All user content lives under `$ENV:USERPROFILE\<MediaType>`. Use standard Windows shell folder names where they exist.
+
+```powershell
+$ENV:USERPROFILE\Documents
+$ENV:USERPROFILE\Downloads
+$ENV:USERPROFILE\Music
+$ENV:USERPROFILE\Pictures       # Screenshots, graphics, wallpapers, digital art
+$ENV:USERPROFILE\Photographs    # Camera captures, DSLR/phone RAW and processed images
+$ENV:USERPROFILE\Videos
+$ENV:USERPROFILE\eBooks         # Digital text: .epub, .mobi, .azw3, .pdf books
+$ENV:USERPROFILE\aBooks         # Audio Books: narrated titles (.mp3, .m4b, .aac)
+$ENV:USERPROFILE\Podcasts
+$ENV:USERPROFILE\Desktop
+```
+
+### Public-Scoped Paths
+
+All shared content accessible to all local users lives under `$ENV:PUBLIC\<MediaType>`.
+
+```powershell
+$ENV:PUBLIC\Documents
+$ENV:PUBLIC\Downloads
+$ENV:PUBLIC\Music
+$ENV:PUBLIC\Pictures
+$ENV:PUBLIC\Photographs
+$ENV:PUBLIC\Videos
+$ENV:PUBLIC\eBooks
+$ENV:PUBLIC\aBooks
+$ENV:PUBLIC\Podcasts
+```
+
+### Log Paths
+
+Logs are stored under `Documents\Logs` — never at the root of a profile or drive.
+
+```powershell
+# User logs
+$ENV:USERPROFILE\Documents\Logs
+
+# Shared/public logs
+$ENV:PUBLIC\Documents\Logs
+```
+
+Resolve log paths in scripts as:
+
+```powershell
+$userLogPath   = Join-Path -Path $ENV:USERPROFILE -ChildPath 'Documents\Logs'
+$publicLogPath = Join-Path -Path $ENV:PUBLIC      -ChildPath 'Documents\Logs'
+```
+
+### Media Type Taxonomy
+
+The following types are semantically distinct and must not be used interchangeably.
+
+| Type        | Path Segment  | Description                                             | Typical Formats                     |
+| ----------- | ------------- | ------------------------------------------------------- | ----------------------------------- |
+| Pictures    | `Pictures`    | Screenshots, graphics, wallpapers, digital art, icons   | .png, .svg, .gif, .bmp, .webp       |
+| Photographs | `Photographs` | Camera captures, phone photos, RAW and processed images | .jpg, .heic, .raw, .cr2, .nef, .arw |
+| eBooks      | `eBooks`      | Digital text books, manuals, reference materials        | .epub, .mobi, .azw3, .pdf           |
+| aBooks      | `aBooks`      | Narrated audio books (spoken word, not music)           | .mp3, .m4b, .aac, .ogg              |
+| Music       | `Music`       | Music tracks and albums                                 | .mp3, .flac, .wav, .ogg, .aac       |
+| Videos      | `Videos`      | Films, recorded sessions, screencasts                   | .mp4, .mkv, .mov, .avi              |
+| Podcasts    | `Podcasts`    | Episodic audio programs                                 | .mp3, .m4a, .ogg                    |
+
+**Key distinctions:**
+
+- _Pictures_ are generated or edited digital images. _Photographs_ originate from a camera or optical sensor.
+- _eBooks_ are text-based reading content. _aBooks_ (Audio Books) are narrated spoken-word recordings. These are separate libraries and must never be merged.
+
+### Backup and Archive Path Convention
+
+Documents and archives may be backed up to an identical directory tree on a secondary drive. The structure must mirror the source exactly — only the drive letter or UNC root changes. Never flatten or restructure the tree on the backup target.
+
+```powershell
+# Source (primary drive)
+C:\Users\USERNAME\Documents\
+
+# Mirror on backup or secondary drive
+R:\Users\USERNAME\Documents\
+```
+
+Resolve the username dynamically in scripts — never hardcode it:
+
+```powershell
+$primaryBase = Join-Path -Path $ENV:USERPROFILE  -ChildPath 'Documents'
+$backupBase  = Join-Path -Path "R:\Users\$ENV:USERNAME" -ChildPath 'Documents'
+```
+
+### Prohibited Path Patterns
+
+- Do not create or reference new folders at any drive root: `C:\Backups`, `D:\Media`, `R:\Logs`, and equivalent patterns are all prohibited.
+- Do not mix user-scoped and public-scoped content under the same path target.
+- Do not use `Pictures` as a container for photographs, or `Photographs` as a container for graphics and icons.
+- Do not use `eBooks` as a container for audio books, or `aBooks` as a container for text-based reading material.
+- Do not hardcode usernames in path strings; always resolve via `$ENV:USERNAME` or `$ENV:USERPROFILE`.
+
 ## Parameter Design and Validation
 
 ### Standard Parameters
@@ -715,19 +835,19 @@ ModuleName/
 ### Default Values and Configuration
 
 - **Defaults File:** Store default values in PowerShell Data Files (.psd1)
-  - Module-level defaults: `ModuleName.psd1`
-  - Machine-specific overrides: `ModuleName.MachineName.psd1`
+    - Module-level defaults: `ModuleName.psd1`
+    - Machine-specific overrides: `ModuleName.MachineName.psd1`
 - **Loading Defaults:** Use `Import-PowerShellDataFile`
-  ```powershell
-  $defaults = Import-PowerShellDataFile -Path "$PSScriptRoot\Defaults.psd1"
-  $machineDefaults = Import-PowerShellDataFile -Path "$PSScriptRoot\ModuleName.$env:COMPUTERNAME.psd1" -ErrorAction SilentlyContinue
-  ```
+    ```powershell
+    $defaults = Import-PowerShellDataFile -Path "$PSScriptRoot\Defaults.psd1"
+    $machineDefaults = Import-PowerShellDataFile -Path "$PSScriptRoot\ModuleName.$env:COMPUTERNAME.psd1" -ErrorAction SilentlyContinue
+    ```
 - **Platform Requirements:** Document with `#Requires` statements
-  ```powershell
-  #Requires -Version 7.6
-  #Requires -Modules Az.Accounts
-  #Requires -PSEdition Core
-  ```
+    ```powershell
+    #Requires -Version 7.6
+    #Requires -Modules Az.Accounts
+    #Requires -PSEdition Core
+    ```
 
 ## Pipeline and Output
 
@@ -1114,29 +1234,29 @@ Describe 'Get-UserProfile' {
 ### Pester 5 Authoring Directive (Mandatory)
 
 - **Dot-sourcing:** Resolve paths explicitly; avoid fragile relatives. Use `Resolve-Path` and `Join-Path` to dot-source targets and helpers.
-  - Example:
-    ```powershell
-    $repoRoot   = (Resolve-Path -Path (Join-Path $PSScriptRoot '..\..')).Path
-        $helperPath = Resolve-Path -Path (Join-Path $PSScriptRoot '..\Support\TestHelpers.ps1')
-    $scriptPath = Resolve-Path -Path (Join-Path $repoRoot 'Scripts\Copy-MediaBatch.ps1')
-        . $helperPath
-    . $scriptPath
-    Initialize-StandardTest
-    ```
+    - Example:
+        ```powershell
+        $repoRoot   = (Resolve-Path -Path (Join-Path $PSScriptRoot '..\..')).Path
+            $helperPath = Resolve-Path -Path (Join-Path $PSScriptRoot '..\Support\TestHelpers.ps1')
+        $scriptPath = Resolve-Path -Path (Join-Path $repoRoot 'Scripts\Copy-MediaBatch.ps1')
+            . $helperPath
+        . $scriptPath
+        Initialize-StandardTest
+        ```
 - **Typed mocks:** When mocking CIM/WMI or external APIs, return objects with correct numeric types and property names. Prefer `PSCustomObject` with explicit properties.
-  - Example (CIM logical disk):
-    ```powershell
-    Mock -CommandName Get-CimInstance -ParameterFilter { $ClassName -eq 'Win32_LogicalDisk' } -MockWith {
-        [PSCustomObject]@{
-            DeviceID     = 'E:'
-            Size         = [long]100GB
-            FreeSpace    = [long]80GB
-            FileSystem   = 'NTFS'
-            DriveType    = 3
-            VolumeSerialNumber = 'TEST0001'
+    - Example (CIM logical disk):
+        ```powershell
+        Mock -CommandName Get-CimInstance -ParameterFilter { $ClassName -eq 'Win32_LogicalDisk' } -MockWith {
+            [PSCustomObject]@{
+                DeviceID     = 'E:'
+                Size         = [long]100GB
+                FreeSpace    = [long]80GB
+                FileSystem   = 'NTFS'
+                DriveType    = 3
+                VolumeSerialNumber = 'TEST0001'
+            }
         }
-    }
-    ```
+        ```
 - **Property assertions:** Prefer `Should -HaveProperty` and value checks over hashtables or `-ContainKey` on PSCustomObject.
 - **-WhatIf flows:** Wrap in try/catch and assert no throw; validate summary object shape with `-HaveProperty` checks.
 - **$PSItem usage:** Use `$PSItem` in script blocks and catch blocks (avoid `$_`).
@@ -1736,6 +1856,7 @@ function Get-UserProfile {
     }
 }
 ```
+
 #endregion Functions
 
 ## Deliverables and verification checklist
@@ -1745,7 +1866,6 @@ function Get-UserProfile {
 - Scripts pass Invoke-ScriptAnalyzer and basic smoke tests.
 - Code is organized into logical `#region` and `#endregion` blocks.
 - Documentation and Specification files are updated accordingly.
-
 
 ## Additional notes
 
