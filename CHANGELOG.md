@@ -1,3 +1,10 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to **Calendar Versioning (yyMM.dd.HH00 or yyMM.dd.HHmm - e.g., $exampleVer)**.
+
 # History of versions for New-OutputObject Module
 
 - 0.9.0 - 2016-11-07 - the first release as a module
@@ -313,3 +320,5 @@
   - Compatibility with PowerShell Core 6.0 beta 8
   - folder separators generalized to support differences between Windows/Linux/macOS
 - 0.8.0 - syntax of assertions updated to Pester v4.x notation
+
+

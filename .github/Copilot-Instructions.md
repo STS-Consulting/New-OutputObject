@@ -1871,3 +1871,9 @@ function Get-UserProfile {
 
 - Keep guidance concise and pragmatic. Prefer concrete code examples over abstract rules when possible.
 - Regularly review and update this guidance as PowerShell best practices evolve.
+
+
+### Versioning Specification (Calendar Versioning - CalVer)
+- **Strict Requirement:** All releases, module manifests, git tags, changelog entries, and instruction headers strictly adhere to **Calendar Versioning (CalVer)** using yyMM.dd.HH00 or yyMM.dd.HHmm (e.g., $exampleVer).
+- **Prohibition:** Semantic Versioning (SemVer / MAJOR.MINOR.PATCH) is **strictly prohibited**.
+
