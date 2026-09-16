@@ -3,7 +3,7 @@ applyTo: "**/*.ps1,**/*.ps1xml,**/*.psc1,**/*.psd1,**/*.psm1,**/*.pssc,**/*.psrc
 description: "Comprehensive PowerShell development guidance for AI-assisted authoring. Combines Microsoft cmdlet guidelines and community best practices."
 ---
 
-## version: "2609.04.1600"
+## version: "2026.09.04.1600"
 
 # PowerShell Development Guidelines for GitHub Copilot
 
@@ -388,7 +388,7 @@ Every module must have a complete module manifest generated via `New-ModuleManif
 ```powershell
 @{
     RootModule = 'MyModule.psm1'
-    ModuleVersion = '2605.20.1800'
+    ModuleVersion = '2026.05.20.1800'
     CompatiblePSEditions = @('Core', 'Desktop')
     GUID = 'FD777A6E-7AE7-4368-8EBD-06EDC6B02784'
     Author = 'DevOps Engineering Team'
@@ -428,7 +428,7 @@ Every standalone script must feature a complete metadata header generated via `M
 
 ```powershell
 <#PSScriptInfo
-.VERSION 2605.20.1800
+.VERSION 2026.05.20.1800
 .GUID FD777A6E-BBC1-4F86-A4FC-EE0E7989372A
 .AUTHOR Scott T Surber
 .COMPANYNAME STS Consulting
@@ -876,7 +876,7 @@ $result = [PSCustomObject]@{
     PSTypeName = 'CustomModule.ResourceInfo'
     Name = $Name
     Status = $Status
-    Created = (Get-Date -Format 'yyMM.dd.HHmm')
+    Created = (Get-Date -Format 'YYYY.MM.DD.HHmm')
 }
 ```
 
@@ -1339,7 +1339,7 @@ See: about_Scopes (Microsoft Docs)
 
 ```powershell
 function Get-Timestamp {
-    $timeStamp = Get-Date -Format 'yyMM.dd.HH00'
+    $timeStamp = Get-Date -Format 'YYYY.MM.DD.HHmm'
     return $timeStamp
 }
 
@@ -1874,6 +1874,6 @@ function Get-UserProfile {
 
 
 ### Versioning Specification (Calendar Versioning - CalVer)
-- **Strict Requirement:** All releases, module manifests, git tags, changelog entries, and instruction headers strictly adhere to **Calendar Versioning (CalVer)** using yyMM.dd.HH00 or yyMM.dd.HHmm (e.g., $exampleVer).
+- **Strict Requirement:** All releases, module manifests, git tags, changelog entries, and instruction headers strictly adhere to **Calendar Versioning (CalVer)** using YYYY.MM.DD.HHmm (e.g., $exampleVer).
 - **Prohibition:** Semantic Versioning (SemVer / MAJOR.MINOR.PATCH) is **strictly prohibited**.
 
