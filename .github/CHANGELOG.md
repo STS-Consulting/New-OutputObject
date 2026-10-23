@@ -10,6 +10,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.0M.
 ## [2026.10.20] - 2026-10-20
 
 ### Changed
+- Coding Standards: Prohibited casting to [void] in addition to Out-Null; unneeded output must be discarded by assigning to $null = ....
 
 - Module Version: Updated module manifest `New-OutputObject.psd1` to Calendar Versioning `2026.10.20.1445`.
 - Code Signing: Re-signed all production module scripts and test suites with Authenticode signature.
@@ -17,6 +18,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.0M.
 ## [2026.10.20] - 2026-10-20
 
 ### Changed
+- Coding Standards: Prohibited casting to [void] in addition to Out-Null; unneeded output must be discarded by assigning to $null = ....
 
 - Transitioned module versioning and release tags to Calendar Versioning (YYYY.0M.0D).
 

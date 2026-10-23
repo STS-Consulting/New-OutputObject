@@ -1,4 +1,4 @@
----
+﻿---
 applyTo: "**/*.ps1,**/*.ps1xml,**/*.psc1,**/*.psd1,**/*.psm1,**/*.pssc,**/*.psrc,**/*.cdxml,**/*.prf,**/*.psh,**/*.ps2,**/*.ps2xml,**/*.psc2"
 description: "Comprehensive PowerShell development guidance for AI-assisted authoring. Combines Microsoft cmdlet guidelines and community best practices."
 ---
@@ -156,7 +156,7 @@ $regexMatches = Select-String -Path .\<path>\*.ps1 -Pattern '<regex pattern>'
 Get-ChildItem -Path .\<path> -Filter *.ps1 -File | ForEach-Object {
     $tokens = $null
     $errors = $null
-    [void][System.Management.Automation.Language.Parser]::ParseFile($PSItem.FullName, [ref]$tokens, [ref]$errors)
+    $null = [System.Management.Automation.Language.Parser]::ParseFile($PSItem.FullName, [ref]$tokens, [ref]$errors)
     "{0}: ParseErrors={1}" -f $PSItem.Name, $errors.Count
 }
 ```
@@ -1143,7 +1143,7 @@ $result = "Hello, " + $name + "!"
 # Large: Use StringBuilder
 $sb = [System.Text.StringBuilder]::new()
 foreach ($item in $largeCollection) {
-    [void]$sb.AppendLine($item)
+    $null = $sb.AppendLine($item)
 }
 $result = $sb.ToString()
 ```
